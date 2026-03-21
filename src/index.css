@@ -1,0 +1,50 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --primary: #2d7a3a;
+  --primary-light: #3a8a47;
+  --accent: #c9a84c;
+  --bg: #f8f7f4;
+  --surface: #ffffff;
+  --text: #1a1a1a;
+  --text-muted: #6b7280;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --success: #10b981;
+}
+
+body {
+  background-color: #f8f7f4;
+  color: #1a1a1a;
+  font-family: 'Inter', sans-serif;
+}
+
+.font-serif {
+  font-family: 'Playfair Display', serif;
+}
+
+/* Custom scrollbar – neutral grey, minimalist */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #e5e5e5 transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: #e5e5e5;
+  border-radius: 3px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background-color: #cccccc;
+}
