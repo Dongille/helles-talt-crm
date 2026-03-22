@@ -35,7 +35,7 @@ export default function Dashboard() {
     .filter(o => new Date(o.deliveryDate!) >= now)
     .slice(0, 5);
 
-  const recentRequests = [...filtered]
+  const recentRequests = [...forfrågningar]
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
     .slice(0, 5);
 

@@ -12,9 +12,13 @@ export default function InvoicingPage() {
 
   const today = new Date().toISOString().slice(0, 10);
 
-  // All bookings where event date has passed
+  // All bookings where event date + 2 days has passed
   const invoiceList = orders
-    .filter(o => o.status === 'bokning' && o.eventDate < today)
+    .filter(o => {
+      const cutoff = new Date(o.eventDate);
+      cutoff.setDate(cutoff.getDate() + 2);
+      return o.status === 'bokning' && cutoff.toISOString().slice(0, 10) <= today;
+    })
     .filter(o => region === 'Alla' || o.region === region)
     .sort((a, b) => b.eventDate.localeCompare(a.eventDate));
 

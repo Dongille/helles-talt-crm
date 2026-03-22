@@ -181,8 +181,8 @@ export default function Statistics() {
         (1 - o.discountPercent / 100);
     });
   });
-  const top10        = Object.values(productMap).sort((a, b) => b.count - a.count).slice(0, 10);
-  const maxProdCount = Math.max(...top10.map(p => p.count), 1);
+  const top10        = Object.values(productMap).sort((a, b) => b.revenue - a.revenue).slice(0, 10);
+  const maxProdCount = Math.max(...top10.map(p => p.revenue), 1);
 
   // ── 4. Regionanalys ───────────────────────────────────────────────────────
   const gbgBook = bookings.filter(o => o.region === 'Göteborg');
@@ -271,12 +271,12 @@ export default function Statistics() {
                   <div style={{ flex: 1 }}>
                     <div style={{ fontSize: 12, fontWeight: 600, color: '#1a1a1a', marginBottom: 4 }}>{p.name}</div>
                     <div style={{ background: '#f0f0f0', borderRadius: 3, height: 7 }}>
-                      <div style={{ width: `${(p.count / maxProdCount) * 100}%`, height: '100%', background: i < 3 ? GREEN : '#9ca3af', borderRadius: 3 }} />
+                      <div style={{ width: `${(p.revenue / maxProdCount) * 100}%`, height: '100%', background: i < 3 ? GREEN : '#9ca3af', borderRadius: 3 }} />
                     </div>
                   </div>
                   <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                    <div style={{ fontSize: 12, fontWeight: 700, color: '#333' }}>{p.count} st</div>
-                    <div style={{ fontSize: 11, color: '#aaa' }}>{fmt(p.revenue)} kr</div>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: '#333' }}>{fmt(p.revenue)} kr</div>
+                    <div style={{ fontSize: 11, color: '#aaa' }}>{p.count} st</div>
                   </div>
                 </div>
               ))}
