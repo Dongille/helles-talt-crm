@@ -418,27 +418,29 @@ export default function OrderForm({ order, initialStatus, lockedStatus, onSave, 
           <section className="bg-white rounded-xl shadow-sm overflow-hidden">
             <div className="px-5 pt-5 pb-3">
               <h3 className="font-semibold mb-4 text-sm uppercase tracking-wider" style={{ color: accent }}>D – Produktval</h3>
-              {/* Tab bar */}
-              <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
-              <div style={{ display: 'flex', gap: 3, background: 'white', border: '1px solid #e5e5e5', borderRadius: 8, padding: 3, minWidth: 'max-content' }}>
-                {TABS.map(tab => {
-                  const count = tab === 'Anpassa'
-                    ? form.items.filter(i => i.category === 'Anpassad').reduce((s, i) => s + i.quantity, 0)
-                    : form.items.filter(i => {
-                        const p = PRODUCTS.find(p => p.id === i.productId);
-                        return p && TAB_CATS[tab].includes(p.category);
-                      }).reduce((s, i) => s + i.quantity, 0);
-                  return (
-                    <button
-                      key={tab}
-                      onClick={() => setActiveTab(tab)}
-                      style={{ flex: 1, padding: '6px 4px', borderRadius: 6, fontSize: 12, fontWeight: 500, background: activeTab === tab ? accent : 'transparent', color: activeTab === tab ? 'white' : '#555', border: 'none', cursor: 'pointer', transition: 'all 0.15s' }}
-                    >
-                      {tab}{count > 0 ? ` (${count})` : ''}
-                    </button>
-                  );
-                })}
-              </div>
+              {/* Tab bar – two rows of three */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                {[TABS.slice(0, 3), TABS.slice(3)].map((row, rowIdx) => (
+                  <div key={rowIdx} style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 3, background: 'white', border: '1px solid #e5e5e5', borderRadius: 8, padding: 3 }}>
+                    {row.map(tab => {
+                      const count = tab === 'Anpassa'
+                        ? form.items.filter(i => i.category === 'Anpassad').reduce((s, i) => s + i.quantity, 0)
+                        : form.items.filter(i => {
+                            const p = PRODUCTS.find(p => p.id === i.productId);
+                            return p && TAB_CATS[tab].includes(p.category);
+                          }).reduce((s, i) => s + i.quantity, 0);
+                      return (
+                        <button
+                          key={tab}
+                          onClick={() => setActiveTab(tab)}
+                          style={{ padding: '6px 4px', borderRadius: 6, fontSize: 12, fontWeight: 500, background: activeTab === tab ? accent : 'transparent', color: activeTab === tab ? 'white' : '#555', border: 'none', cursor: 'pointer', transition: 'all 0.15s', textAlign: 'center' }}
+                        >
+                          {tab}{count > 0 ? ` (${count})` : ''}
+                        </button>
+                      );
+                    })}
+                  </div>
+                ))}
               </div>
             </div>{/* end px-5 pt-5 pb-3 */}
 
