@@ -23,12 +23,14 @@ export default function Calendar() {
   const days       = eachDayOfInterval({ start: calStart, end: calEnd });
 
   const getEventsForDay = (day: Date) => {
-    const deliveries   = filtered.filter(o => o.deliveryDate && isSameDay(parseISO(o.deliveryDate), day) && !o.selfPickup);
-    const pickups      = filtered.filter(o => o.pickupDate   && isSameDay(parseISO(o.pickupDate),   day) && !o.selfPickup);
-    // Events split by delivery type
-    const events       = showEvents ? filtered.filter(o =>  isSameDay(parseISO(o.eventDate), day) && !o.selfPickup) : [];
-    const selfEvents   = showEvents ? filtered.filter(o =>  isSameDay(parseISO(o.eventDate), day) &&  o.selfPickup) : [];
-    return { deliveries, pickups, events, selfEvents };
+    const deliveries      = filtered.filter(o => o.deliveryDate && isSameDay(parseISO(o.deliveryDate), day) && !o.selfPickup);
+    const pickups         = filtered.filter(o => o.pickupDate   && isSameDay(parseISO(o.pickupDate),   day) && !o.selfPickup);
+    // All events (blue) regardless of self-pickup
+    const events          = showEvents ? filtered.filter(o => isSameDay(parseISO(o.eventDate), day)) : [];
+    // Gray: self-pickup delivery/return dates
+    const selfDeliveries  = filtered.filter(o => o.deliveryDate && isSameDay(parseISO(o.deliveryDate), day) &&  o.selfPickup);
+    const selfReturns     = filtered.filter(o => o.pickupDate   && isSameDay(parseISO(o.pickupDate),   day) &&  o.selfPickup);
+    return { deliveries, pickups, events, selfDeliveries, selfReturns };
   };
 
   const selectedEvents = selectedDay ? getEventsForDay(selectedDay) : null;
@@ -98,7 +100,11 @@ export default function Calendar() {
         </div>
         <div className="flex items-center gap-1.5">
           <div className="w-3 h-3 rounded-full" style={{ background: '#9ca3af' }} />
-          <span>Event (kund hämtar &amp; återlämnar själv)</span>
+          <span>Kund hämtning</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <div className="w-3 h-3 rounded-full" style={{ background: '#9ca3af' }} />
+          <span>Kund återlämning</span>
         </div>
       </div>
 
@@ -115,8 +121,8 @@ export default function Calendar() {
             </div>
             <div className="grid grid-cols-7">
               {days.map(day => {
-                const { deliveries, pickups, events, selfEvents } = getEventsForDay(day);
-                const total   = deliveries.length + pickups.length + events.length + selfEvents.length;
+                const { deliveries, pickups, events, selfDeliveries, selfReturns } = getEventsForDay(day);
+                const total   = deliveries.length + pickups.length + events.length + selfDeliveries.length + selfReturns.length;
                 const inMonth = isSameMonth(day, currentMonth);
                 const today   = isToday(day);
                 const selected = selectedDay && isSameDay(day, selectedDay);
@@ -152,9 +158,15 @@ export default function Calendar() {
                           {o.lastName}
                         </div>
                       ))}
-                      {selfEvents.slice(0, 1).map(o => (
+                      {selfDeliveries.slice(0, 1).map(o => (
                         <div key={o.id} className="text-[10px] rounded px-1 py-0.5 truncate flex items-center gap-1" style={{ background: '#f3f4f6', color: '#6b7280' }}>
-                          <Star size={8} className="flex-shrink-0" />
+                          <Truck size={8} className="flex-shrink-0" />
+                          {o.lastName}
+                        </div>
+                      ))}
+                      {selfReturns.slice(0, 1).map(o => (
+                        <div key={o.id} className="text-[10px] rounded px-1 py-0.5 truncate flex items-center gap-1" style={{ background: '#f3f4f6', color: '#6b7280' }}>
+                          <Package size={8} className="flex-shrink-0" />
                           {o.lastName}
                         </div>
                       ))}
@@ -178,7 +190,8 @@ export default function Calendar() {
             {selectedEvents.deliveries.length === 0 &&
              selectedEvents.pickups.length    === 0 &&
              selectedEvents.events.length     === 0 &&
-             selectedEvents.selfEvents.length === 0 ? (
+             selectedEvents.selfDeliveries.length === 0 &&
+             selectedEvents.selfReturns.length    === 0 ? (
               <p className="text-sm text-gray-400">Inga aktiviteter</p>
             ) : (
               <div className="space-y-4">
@@ -206,12 +219,20 @@ export default function Calendar() {
                     {selectedEvents.events.map(o => <OrderCard key={o.id} order={o} />)}
                   </div>
                 )}
-                {selectedEvents.selfEvents.length > 0 && (
+                {selectedEvents.selfDeliveries.length > 0 && (
                   <div>
                     <h4 className="text-xs font-semibold uppercase tracking-wider mb-2 flex items-center gap-1.5" style={{ color: '#6b7280' }}>
-                      <Star size={12} /> Event (kund hämtar själv)
+                      <Truck size={12} /> Kund hämtning
                     </h4>
-                    {selectedEvents.selfEvents.map(o => <OrderCard key={o.id} order={o} />)}
+                    {selectedEvents.selfDeliveries.map(o => <OrderCard key={o.id} order={o} />)}
+                  </div>
+                )}
+                {selectedEvents.selfReturns.length > 0 && (
+                  <div>
+                    <h4 className="text-xs font-semibold uppercase tracking-wider mb-2 flex items-center gap-1.5" style={{ color: '#6b7280' }}>
+                      <Package size={12} /> Kund återlämning
+                    </h4>
+                    {selectedEvents.selfReturns.map(o => <OrderCard key={o.id} order={o} />)}
                   </div>
                 )}
               </div>
