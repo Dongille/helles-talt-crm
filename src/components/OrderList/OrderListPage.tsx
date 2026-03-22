@@ -25,6 +25,8 @@ export default function OrderListPage({ statusFilter }: Props) {
   const list = orders
     .filter((o) => o.status === statusFilter)
     .filter((o) => region === 'Alla' || o.region === region)
+    // Hide bookings manually marked as 'färdig' (they move to Invoicing)
+    .filter((o) => statusFilter !== 'bokning' || (o.bookingStatus ?? 'kommande') !== 'färdig')
     .sort((a, b) =>
       sortBy === 'lastName'
         ? a.lastName.localeCompare(b.lastName, 'sv')
@@ -164,12 +166,15 @@ export default function OrderListPage({ statusFilter }: Props) {
               <th className="px-4 py-3 text-left hidden md:table-cell">Region</th>
               <th className="px-4 py-3 text-right hidden sm:table-cell">Ordervärde</th>
               <th className="px-4 py-3 text-center">Åtgärder</th>
+              {statusFilter === 'bokning' && (
+                <th className="px-4 py-3 text-left hidden sm:table-cell">Status</th>
+              )}
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-50">
             {list.length === 0 ? (
               <tr>
-                <td colSpan={5} className="px-4 py-12 text-center text-gray-400 text-sm">
+                <td colSpan={statusFilter === 'bokning' ? 6 : 5} className="px-4 py-12 text-center text-gray-400 text-sm">
                   Inga {statusFilter === 'förfrågan' ? 'förfrågningar' : 'bokningar'} ännu
                 </td>
               </tr>
@@ -304,6 +309,28 @@ export default function OrderListPage({ statusFilter }: Props) {
                         )}
                       </div>
                     </td>
+
+                    {/* Status column – bokningar only, desktop */}
+                    {statusFilter === 'bokning' && (
+                      <td className="px-4 py-3 hidden sm:table-cell">
+                        <select
+                          value={order.bookingStatus ?? 'kommande'}
+                          onChange={(e) =>
+                            updateOrder(order.id, { bookingStatus: e.target.value as 'kommande' | 'färdig' })
+                          }
+                          style={{
+                            fontSize: 12, fontWeight: 600, borderRadius: 20, border: '1px solid',
+                            padding: '3px 10px', cursor: 'pointer', outline: 'none',
+                            background: (order.bookingStatus ?? 'kommande') === 'färdig' ? '#f0fdf4' : '#f8f8f8',
+                            color: (order.bookingStatus ?? 'kommande') === 'färdig' ? '#2d7a3a' : '#555',
+                            borderColor: (order.bookingStatus ?? 'kommande') === 'färdig' ? '#bbf7d0' : '#e5e5e5',
+                          }}
+                        >
+                          <option value="kommande">Kommande</option>
+                          <option value="färdig">Färdig</option>
+                        </select>
+                      </td>
+                    )}
                   </tr>
                 );
               })

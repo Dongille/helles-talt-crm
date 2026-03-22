@@ -10,15 +10,9 @@ export default function InvoicingPage() {
   const { region } = useAppContext();
   const [loadingPdf, setLoadingPdf] = useState<string | null>(null);
 
-  const today = new Date().toISOString().slice(0, 10);
-
-  // All bookings where event date + 2 days has passed
+  // All bookings manually marked as 'färdig'
   const invoiceList = orders
-    .filter(o => {
-      const cutoff = new Date(o.eventDate);
-      cutoff.setDate(cutoff.getDate() + 2);
-      return o.status === 'bokning' && cutoff.toISOString().slice(0, 10) <= today;
-    })
+    .filter(o => o.status === 'bokning' && o.bookingStatus === 'färdig')
     .filter(o => region === 'Alla' || o.region === region)
     .sort((a, b) => b.eventDate.localeCompare(a.eventDate));
 
@@ -39,6 +33,10 @@ export default function InvoicingPage() {
     } finally {
       setLoadingPdf(null);
     }
+  };
+
+  const handleRestore = (id: string) => {
+    updateOrder(id, { bookingStatus: 'kommande', invoicedAt: undefined });
   };
 
   const fmtDate = (iso?: string) => {
@@ -150,6 +148,20 @@ export default function InvoicingPage() {
                         Markera fakturerad
                       </button>
                     )}
+
+                    {/* Återställ till bokningslistan */}
+                    <button
+                      onClick={() => handleRestore(order.id)}
+                      title="Återställ till bokningslistan"
+                      style={{
+                        padding: '4px 10px', borderRadius: 7,
+                        border: '1px solid #e5e5e5', background: 'white',
+                        color: '#6b7280', fontWeight: 600, fontSize: 12, cursor: 'pointer',
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      Återställ
+                    </button>
                   </div>
                 </td>
               </tr>
@@ -166,7 +178,7 @@ export default function InvoicingPage() {
       <div>
         <h2 className="font-serif text-2xl font-bold text-[#2d7a3a]">Fakturering</h2>
         <p className="text-gray-500 text-sm mt-1">
-          Bokningar vars eventdatum har passerat
+          Bokningar manuellt markerade som klara
         </p>
       </div>
 

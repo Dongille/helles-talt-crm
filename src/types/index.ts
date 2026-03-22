@@ -45,6 +45,7 @@ export interface Order {
   pickupTime?: string;
   archivedAt?: string;   // ISO timestamp – set when status → 'arkiverad' or 'avbokad'
   invoicedAt?: string;   // ISO timestamp – set when marked as fakturerad
+  bookingStatus?: 'kommande' | 'färdig'; // manual status for invoicing flow
 }
 
 export interface InventoryItem {
