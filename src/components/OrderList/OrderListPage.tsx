@@ -217,13 +217,14 @@ export default function OrderListPage({ statusFilter }: Props) {
                       <p className="text-xs text-gray-400">exkl. moms</p>
                     </td>
                     <td className="px-4 py-3">
-                      <div className="flex items-center justify-center gap-1.5 min-h-[44px] sm:min-h-0">
+                      {/* Mobile: 2×2 grid (no delete). Desktop: single row with all buttons. */}
+                      <div className="hidden sm:flex items-center justify-center gap-1.5">
                         {/* Offert PDF */}
                         <button
                           onClick={() => handlePdf(order, 'offert')}
                           disabled={isLoadingOffert}
                           title={order.quoteNumber !== undefined ? 'Ladda ned offert (PDF)' : 'Generera offert (PDF)'}
-                          className={`p-2 sm:p-1.5 rounded-lg transition-colors ${
+                          className={`p-1.5 rounded-lg transition-colors ${
                             order.quoteNumber !== undefined
                               ? 'text-amber-700 bg-amber-50 hover:bg-amber-100'
                               : 'text-amber-400 hover:bg-amber-50'
@@ -231,13 +232,12 @@ export default function OrderListPage({ statusFilter }: Props) {
                         >
                           {isLoadingOffert ? <span className="text-xs">...</span> : <FileText size={15} />}
                         </button>
-
                         {/* Bekräftelse PDF */}
                         <button
                           onClick={() => handlePdf(order, 'bekräftelse')}
                           disabled={isLoadingBek}
                           title={order.confirmationNumber !== undefined ? 'Ladda ned bekräftelse (PDF)' : 'Generera bekräftelse (PDF)'}
-                          className={`p-2 sm:p-1.5 rounded-lg transition-colors ${
+                          className={`p-1.5 rounded-lg transition-colors ${
                             order.confirmationNumber !== undefined
                               ? 'text-green-700 bg-green-50 hover:bg-green-100'
                               : 'text-green-400 hover:bg-green-50'
@@ -245,41 +245,64 @@ export default function OrderListPage({ statusFilter }: Props) {
                         >
                           {isLoadingBek ? <span className="text-xs">...</span> : <Download size={15} />}
                         </button>
-
-                        <button
-                          onClick={() => handleEdit(order)}
-                          title="Redigera"
-                          className="p-2 sm:p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                        >
+                        <button onClick={() => handleEdit(order)} title="Redigera" className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
                           <Pencil size={15} />
                         </button>
-
-                        {/* Arkivera (förfrågningar) / Avboka (bokningar) */}
                         {statusFilter === 'förfrågan' ? (
-                          <button
-                            onClick={() => handleArchive(order.id)}
-                            title="Arkivera förfrågan"
-                            className="p-2 sm:p-1.5 text-red-500 hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors"
-                          >
+                          <button onClick={() => handleArchive(order.id)} title="Arkivera förfrågan" className="p-1.5 text-red-500 hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors">
                             <XCircle size={15} />
                           </button>
                         ) : (
-                          <button
-                            onClick={() => setCancelConfirmId(order.id)}
-                            title="Avboka"
-                            className="p-2 sm:p-1.5 text-red-500 hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors"
-                          >
+                          <button onClick={() => setCancelConfirmId(order.id)} title="Avboka" className="p-1.5 text-red-500 hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors">
                             <XCircle size={15} />
                           </button>
                         )}
-
-                        <button
-                          onClick={() => handleDelete(order.id)}
-                          title="Ta bort"
-                          className="p-2 sm:p-1.5 text-gray-400 hover:text-gray-600 rounded-lg transition-colors"
-                        >
+                        <button onClick={() => handleDelete(order.id)} title="Ta bort" className="p-1.5 text-gray-400 hover:text-gray-600 rounded-lg transition-colors">
                           <X size={16} />
                         </button>
+                      </div>
+
+                      {/* Mobile: 2×2 grid, no delete button */}
+                      <div className="grid grid-cols-2 gap-1 sm:hidden w-fit mx-auto">
+                        {/* Row 1: Offert + Bekräftelse */}
+                        <button
+                          onClick={() => handlePdf(order, 'offert')}
+                          disabled={isLoadingOffert}
+                          title={order.quoteNumber !== undefined ? 'Ladda ned offert (PDF)' : 'Generera offert (PDF)'}
+                          className={`p-2.5 rounded-lg transition-colors ${
+                            order.quoteNumber !== undefined
+                              ? 'text-amber-700 bg-amber-50 hover:bg-amber-100'
+                              : 'text-amber-400 hover:bg-amber-50'
+                          } disabled:opacity-40`}
+                        >
+                          {isLoadingOffert ? <span className="text-xs">...</span> : <FileText size={16} />}
+                        </button>
+                        <button
+                          onClick={() => handlePdf(order, 'bekräftelse')}
+                          disabled={isLoadingBek}
+                          title={order.confirmationNumber !== undefined ? 'Ladda ned bekräftelse (PDF)' : 'Generera bekräftelse (PDF)'}
+                          className={`p-2.5 rounded-lg transition-colors ${
+                            order.confirmationNumber !== undefined
+                              ? 'text-green-700 bg-green-50 hover:bg-green-100'
+                              : 'text-green-400 hover:bg-green-50'
+                          } disabled:opacity-40`}
+                        >
+                          {isLoadingBek ? <span className="text-xs">...</span> : <Download size={16} />}
+                        </button>
+                        {/* Row 2: Redigera + Arkivera/Avboka */}
+                        <button onClick={() => handleEdit(order)} title="Redigera" className="p-2.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
+                          <Pencil size={16} />
+                        </button>
+                        {statusFilter === 'förfrågan' ? (
+                          <button onClick={() => handleArchive(order.id)} title="Arkivera förfrågan" className="p-2.5 text-red-500 hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors">
+                            <XCircle size={16} />
+                          </button>
+                        ) : (
+                          <button onClick={() => setCancelConfirmId(order.id)} title="Avboka" className="p-2.5 text-red-500 hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors">
+                            <XCircle size={16} />
+                          </button>
+                        )}
+                      </div>
                       </div>
                     </td>
                   </tr>
