@@ -303,7 +303,6 @@ export default function OrderListPage({ statusFilter }: Props) {
                           </button>
                         )}
                       </div>
-                      </div>
                     </td>
                   </tr>
                 );
