@@ -156,7 +156,7 @@ export default function OrderListPage({ statusFilter }: Props) {
           </div>
         </div>
         <div className="overflow-x-auto">
-        <table className="w-full min-w-[480px]">
+        <table className="w-full">
           <thead className="bg-gray-50 text-xs text-gray-500 uppercase tracking-wider">
             <tr>
               <th className="px-4 py-3 text-left">Kund</th>
@@ -217,13 +217,13 @@ export default function OrderListPage({ statusFilter }: Props) {
                       <p className="text-xs text-gray-400">exkl. moms</p>
                     </td>
                     <td className="px-4 py-3">
-                      <div className="flex items-center justify-center gap-1.5">
+                      <div className="flex items-center justify-center gap-1.5 min-h-[44px] sm:min-h-0">
                         {/* Offert PDF */}
                         <button
                           onClick={() => handlePdf(order, 'offert')}
                           disabled={isLoadingOffert}
                           title={order.quoteNumber !== undefined ? 'Ladda ned offert (PDF)' : 'Generera offert (PDF)'}
-                          className={`p-1.5 rounded-lg transition-colors ${
+                          className={`p-2 sm:p-1.5 rounded-lg transition-colors ${
                             order.quoteNumber !== undefined
                               ? 'text-amber-700 bg-amber-50 hover:bg-amber-100'
                               : 'text-amber-400 hover:bg-amber-50'
@@ -237,7 +237,7 @@ export default function OrderListPage({ statusFilter }: Props) {
                           onClick={() => handlePdf(order, 'bekräftelse')}
                           disabled={isLoadingBek}
                           title={order.confirmationNumber !== undefined ? 'Ladda ned bekräftelse (PDF)' : 'Generera bekräftelse (PDF)'}
-                          className={`p-1.5 rounded-lg transition-colors ${
+                          className={`p-2 sm:p-1.5 rounded-lg transition-colors ${
                             order.confirmationNumber !== undefined
                               ? 'text-green-700 bg-green-50 hover:bg-green-100'
                               : 'text-green-400 hover:bg-green-50'
@@ -249,7 +249,7 @@ export default function OrderListPage({ statusFilter }: Props) {
                         <button
                           onClick={() => handleEdit(order)}
                           title="Redigera"
-                          className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                          className="p-2 sm:p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                         >
                           <Pencil size={15} />
                         </button>
@@ -259,7 +259,7 @@ export default function OrderListPage({ statusFilter }: Props) {
                           <button
                             onClick={() => handleArchive(order.id)}
                             title="Arkivera förfrågan"
-                            className="p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600 rounded-lg transition-colors"
+                            className="p-2 sm:p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600 rounded-lg transition-colors"
                           >
                             <Archive size={15} />
                           </button>
@@ -267,16 +267,16 @@ export default function OrderListPage({ statusFilter }: Props) {
                           <button
                             onClick={() => setCancelConfirmId(order.id)}
                             title="Avboka"
-                            style={{ padding: '3px 10px', borderRadius: 6, border: '1px solid #fca5a5', background: '#fff5f5', color: '#ef4444', fontSize: 12, fontWeight: 600, cursor: 'pointer', lineHeight: 1.5 }}
+                            className="p-2 sm:p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600 rounded-lg transition-colors"
                           >
-                            Avboka
+                            <XCircle size={15} />
                           </button>
                         )}
 
                         <button
                           onClick={() => handleDelete(order.id)}
                           title="Ta bort"
-                          className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                          className="p-2 sm:p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
                         >
                           <Trash2 size={15} />
                         </button>

@@ -230,7 +230,7 @@ export default function OrderForm({ order, initialStatus, lockedStatus, onSave, 
           {/* Sektion A */}
           <section className="bg-white rounded-xl p-5 shadow-sm">
             <h3 className="font-semibold mb-4 text-sm uppercase tracking-wider" style={{ color: accent }}>A – Status & Region</h3>
-            <div className={`grid gap-6 ${lockedStatus ? 'grid-cols-1' : 'grid-cols-2'}`}>
+            <div className={`grid gap-6 ${lockedStatus ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-2'}`}>
               {!lockedStatus && (
                 <div>
                   <label className="text-sm font-medium text-gray-700 mb-2 block">Status</label>
