@@ -18,7 +18,7 @@ export default function OrderListPage({ statusFilter }: Props) {
   const { getNextOffertNumber, getNextBokningNumber } = useDocumentNumbers();
   const [showForm, setShowForm] = useState(false);
   const [editingOrder, setEditingOrder] = useState<Order | undefined>();
-  const [sortBy, setSortBy] = useState<'lastName' | 'eventDate'>('lastName');
+  const [sortBy, setSortBy] = useState<'lastName' | 'eventDate'>('eventDate');
   const [loadingPdf, setLoadingPdf] = useState<string | null>(null);
   const [cancelConfirmId, setCancelConfirmId] = useState<string | null>(null);
 
