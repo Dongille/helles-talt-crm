@@ -5,7 +5,7 @@ import { PRODUCTS } from '../../data/products';
 import { calculateOrder, formatSEK } from '../../utils/calculations';
 import { X, Plus, Minus } from 'lucide-react';
 
-const TABS = ['Paketerbjudande', 'Partytält', 'Möbler', 'Festutrustning', 'Aktiviteter'] as const;
+const TABS = ['Paketerbjudande', 'Partytält', 'Möbler', 'Festutrustning', 'Aktiviteter', 'Anpassa'] as const;
 type Tab = typeof TABS[number];
 
 const TAB_SUBCATS: Record<Tab, string[]> = {
@@ -14,6 +14,7 @@ const TAB_SUBCATS: Record<Tab, string[]> = {
   'Möbler': ['Sittplatser', 'Bord', 'Textiler'],
   'Festutrustning': ['Festutrustning', 'Porslin'],
   'Aktiviteter': [],
+  'Anpassa': [],
 };
 
 const MÖBLER_CAT: Record<string, string> = {
@@ -64,6 +65,7 @@ const TAB_CATS: Record<Tab, string[]> = {
   'Möbler': ['Möbler – Stolar & Bänkset', 'Möbler – Bord & Ståbord', 'Möbler – Dukar & Överdrag', 'Porslin & Bestick'],
   'Festutrustning': ['Festutrustning & Övrigt'],
   'Aktiviteter': [],
+  'Anpassa': ['Anpassad'],
 };
 
 interface OrderFormProps {
@@ -180,6 +182,23 @@ export default function OrderForm({ order, initialStatus, lockedStatus, onSave, 
       ...prev,
       items: prev.items.map(i => i.productId === productId ? { ...i, ...updates } : i),
     }));
+  };
+
+  const addCustomItem = () => {
+    const newItem: OrderItem = {
+      productId: 'custom-' + uuidv4(),
+      productName: '',
+      category: 'Anpassad',
+      quantity: 1,
+      unitPrice: 0,
+      includesMontage: false,
+      montageUnitPrice: 0,
+    };
+    setForm(prev => ({ ...prev, items: [...prev.items, newItem] }));
+  };
+
+  const removeCustomItem = (productId: string) => {
+    setForm(prev => ({ ...prev, items: prev.items.filter(i => i.productId !== productId) }));
   };
 
   const handleSave = (saveAsStatus: 'förfrågan' | 'bokning') => {
@@ -403,10 +422,12 @@ export default function OrderForm({ order, initialStatus, lockedStatus, onSave, 
               <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
               <div style={{ display: 'flex', gap: 3, background: 'white', border: '1px solid #e5e5e5', borderRadius: 8, padding: 3, minWidth: 'max-content' }}>
                 {TABS.map(tab => {
-                  const count = form.items.filter(i => {
-                    const p = PRODUCTS.find(p => p.id === i.productId);
-                    return p && TAB_CATS[tab].includes(p.category);
-                  }).reduce((s, i) => s + i.quantity, 0);
+                  const count = tab === 'Anpassa'
+                    ? form.items.filter(i => i.category === 'Anpassad').reduce((s, i) => s + i.quantity, 0)
+                    : form.items.filter(i => {
+                        const p = PRODUCTS.find(p => p.id === i.productId);
+                        return p && TAB_CATS[tab].includes(p.category);
+                      }).reduce((s, i) => s + i.quantity, 0);
                   return (
                     <button
                       key={tab}
@@ -439,15 +460,61 @@ export default function OrderForm({ order, initialStatus, lockedStatus, onSave, 
               </div>
             )}
 
-            {/* Table header */}
+            {/* Anpassa tab – custom product rows */}
+            {activeTab === 'Anpassa' && (
+              <div>
+                <div style={{ borderTop: '1px solid #f0f0f0' }}>
+                  {form.items.filter(i => i.category === 'Anpassad').map(item => (
+                    <div key={item.productId} style={{ display: 'grid', gridTemplateColumns: '1fr 110px 110px 32px', padding: '8px 20px', borderBottom: '1px solid #f0f0f0', alignItems: 'center', gap: 8, background: 'white' }}>
+                      <input
+                        type="text"
+                        placeholder="Produktnamn..."
+                        value={item.productName}
+                        onChange={e => updateItem(item.productId, { productName: e.target.value })}
+                        style={{ border: '1px solid #e0e0e0', borderRadius: 6, padding: '5px 10px', fontSize: 13, width: '100%' }}
+                      />
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                        <input
+                          type="number"
+                          min="0"
+                          placeholder="0"
+                          value={item.unitPrice || ''}
+                          onChange={e => updateItem(item.productId, { unitPrice: parseFloat(e.target.value) || 0 })}
+                          style={{ border: '1px solid #e0e0e0', borderRadius: 6, padding: '5px 8px', fontSize: 13, width: '100%', textAlign: 'right' }}
+                        />
+                        <span style={{ fontSize: 12, color: '#999', whiteSpace: 'nowrap' }}>kr</span>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 5 }}>
+                        <button onClick={() => updateItem(item.productId, { quantity: Math.max(1, item.quantity - 1) })} style={{ width: 26, height: 26, borderRadius: '50%', border: '1px solid #e0e0e0', background: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Minus size={11} /></button>
+                        <span style={{ width: 22, textAlign: 'center', fontSize: 13, fontWeight: 500 }}>{item.quantity}</span>
+                        <button onClick={() => updateItem(item.productId, { quantity: item.quantity + 1 })} style={{ width: 26, height: 26, borderRadius: '50%', border: '1px solid #e0e0e0', background: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Plus size={11} /></button>
+                      </div>
+                      <button onClick={() => removeCustomItem(item.productId)} style={{ width: 26, height: 26, borderRadius: '50%', border: 'none', background: '#fee2e2', color: '#ef4444', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><X size={12} /></button>
+                    </div>
+                  ))}
+                </div>
+                <div style={{ padding: '12px 20px' }}>
+                  <button
+                    onClick={addCustomItem}
+                    style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 600, color: accent, background: accentLight, border: `1px dashed ${accentBorder}`, borderRadius: 8, padding: '8px 16px', cursor: 'pointer' }}
+                  >
+                    <Plus size={14} /> Lägg till produkt
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Table header – standard tabs only */}
+            {activeTab !== 'Anpassa' && (
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 100px 110px', padding: '6px 20px', background: '#f9f9f9', borderTop: '1px solid #f0f0f0', borderBottom: '1px solid #f0f0f0', fontSize: 11, color: '#999', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.4px' }}>
               <span>Produkt</span>
               <span style={{ textAlign: 'right' }}>Pris</span>
               <span style={{ textAlign: 'right' }}>Antal</span>
             </div>
+            )}
 
             {/* Product rows */}
-            <div>
+            {activeTab !== 'Anpassa' && <div>
               {(() => {
                 const currentSubcat = activeSubcat[activeTab] ?? TAB_SUBCATS[activeTab][0] ?? '';
                 const visibleProducts = getTabProducts(activeTab, currentSubcat);
@@ -528,7 +595,7 @@ export default function OrderForm({ order, initialStatus, lockedStatus, onSave, 
                   );
                 });
               })()}
-            </div>
+            </div>}
 
             {/* Summary row */}
             <div style={{ background: accentLight, padding: '10px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: `1px solid ${accentBorder}` }}>
