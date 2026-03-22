@@ -4,7 +4,7 @@ import { useAppContext } from '../../context/AppContext';
 import { useDocumentNumbers } from '../../hooks/useDocumentNumbers';
 import type { Order } from '../../types';
 import { calculateOrder, formatSEK } from '../../utils/calculations';
-import { Pencil, Trash2, FileText, Download, Archive, XCircle } from 'lucide-react';
+import { Pencil, X, FileText, Download, XCircle } from 'lucide-react';
 import OrderForm from '../OrderForm/OrderForm';
 import { generateAndPrint } from '../PdfGenerator/generateHtml';
 
@@ -259,9 +259,9 @@ export default function OrderListPage({ statusFilter }: Props) {
                           <button
                             onClick={() => handleArchive(order.id)}
                             title="Arkivera förfrågan"
-                            className="p-2 sm:p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600 rounded-lg transition-colors"
+                            className="p-2 sm:p-1.5 text-red-500 hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors"
                           >
-                            <Archive size={15} />
+                            <XCircle size={15} />
                           </button>
                         ) : (
                           <button
@@ -276,9 +276,9 @@ export default function OrderListPage({ statusFilter }: Props) {
                         <button
                           onClick={() => handleDelete(order.id)}
                           title="Ta bort"
-                          className="p-2 sm:p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                          className="p-2 sm:p-1.5 text-gray-400 hover:text-gray-600 rounded-lg transition-colors"
                         >
-                          <Trash2 size={15} />
+                          <X size={16} />
                         </button>
                       </div>
                     </td>
