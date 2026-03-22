@@ -206,16 +206,28 @@ export function useOrders() {
 
   const addOrder = (order: Order) => {
     setOrders(prev => [order, ...prev]);
-    supabase.from('orders').insert(toRow(order)).then(({ error }) => {
+    const row = toRow(order);
+    supabase.from('orders').insert(row).then(async ({ error }) => {
       if (error) {
-        console.error('addOrder error', error);
-        emitDbError(
-          error.code === 'PGRST205'
-            ? 'Kunde inte spara: tabellen "orders" saknas – kör SQL-skriptet i Supabase.'
-            : `Kunde inte spara ordern: ${error.message}`,
-        );
-        // Roll back optimistic update
-        setOrders(prev => prev.filter(o => o.id !== order.id));
+        // If schema cache error (missing column), retry without booking_status
+        if (error.message?.includes('booking_status') || error.code === 'PGRST204') {
+          console.warn('addOrder: booking_status column missing, retrying without it');
+          const { booking_status: _dropped, ...rowWithout } = row;
+          const { error: err2 } = await supabase.from('orders').insert(rowWithout);
+          if (err2) {
+            console.error('addOrder retry error', err2);
+            emitDbError(`Kunde inte spara ordern: ${err2.message}`);
+            setOrders(prev => prev.filter(o => o.id !== order.id));
+          }
+        } else {
+          console.error('addOrder error', error);
+          emitDbError(
+            error.code === 'PGRST205'
+              ? 'Kunde inte spara: tabellen "orders" saknas – kör SQL-skriptet i Supabase.'
+              : `Kunde inte spara ordern: ${error.message}`,
+          );
+          setOrders(prev => prev.filter(o => o.id !== order.id));
+        }
       }
     });
   };
@@ -228,10 +240,22 @@ export function useOrders() {
     const current = ordersRef.current.find(o => o.id === id);
     if (!current) return;
     const merged = { ...current, ...updated, updatedAt: now };
-    supabase.from('orders').update(toRow(merged)).eq('id', id).then(({ error }) => {
+    const row = toRow(merged);
+    supabase.from('orders').update(row).eq('id', id).then(async ({ error }) => {
       if (error) {
-        console.error('updateOrder error', error);
-        emitDbError(`Kunde inte uppdatera ordern: ${error.message}`);
+        // If schema cache error (missing column), retry without booking_status
+        if (error.message?.includes('booking_status') || error.code === 'PGRST204') {
+          console.warn('updateOrder: booking_status column missing, retrying without it');
+          const { booking_status: _dropped, ...rowWithout } = row;
+          const { error: err2 } = await supabase.from('orders').update(rowWithout).eq('id', id);
+          if (err2) {
+            console.error('updateOrder retry error', err2);
+            emitDbError(`Kunde inte uppdatera ordern: ${err2.message}`);
+          }
+        } else {
+          console.error('updateOrder error', error);
+          emitDbError(`Kunde inte uppdatera ordern: ${error.message}`);
+        }
       }
     });
   };
