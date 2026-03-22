@@ -267,7 +267,7 @@ export default function OrderListPage({ statusFilter }: Props) {
                           <button
                             onClick={() => setCancelConfirmId(order.id)}
                             title="Avboka"
-                            className="p-2 sm:p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600 rounded-lg transition-colors"
+                            className="p-2 sm:p-1.5 text-red-500 hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors"
                           >
                             <XCircle size={15} />
                           </button>
