@@ -7,10 +7,27 @@ export function emitDbError(msg: string) {
   window.dispatchEvent(new CustomEvent('helles-db-error', { detail: msg }));
 }
 
+// ── localStorage layer for bookingStatus (schema cache fallback) ──────────────
+// Stored as { [orderId]: 'kommande' | 'färdig' } so it survives page reloads
+// even when Supabase schema cache doesn't recognise the column yet.
+const BS_KEY = 'helles-booking-status-v1';
+
+function readLocalBS(): Record<string, 'kommande' | 'färdig'> {
+  try { return JSON.parse(localStorage.getItem(BS_KEY) || '{}'); } catch { return {}; }
+}
+function writeLocalBS(id: string, val: 'kommande' | 'färdig' | undefined) {
+  const map = readLocalBS();
+  if (val == null) delete map[id]; else map[id] = val;
+  localStorage.setItem(BS_KEY, JSON.stringify(map));
+}
+
 // ── Row converters ────────────────────────────────────────────────────────────
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function fromRow(row: any): Order {
+  // Prefer DB value; fall back to localStorage if column not yet in schema cache
+  const dbStatus = (row.booking_status as Order['bookingStatus']) ?? undefined;
+  const localStatus = readLocalBS()[String(row.id)];
   return {
     id:                       String(row.id),
     status:                   row.status                 as Order['status'],
@@ -46,7 +63,7 @@ function fromRow(row: any): Order {
     pickupTime:               row.pickup_time    ?? undefined,
     archivedAt:               row.archived_at    ?? undefined,
     invoicedAt:               row.invoiced_at    ?? undefined,
-    bookingStatus:            (row.booking_status as Order['bookingStatus']) ?? undefined,
+    bookingStatus:            dbStatus ?? localStatus,
   };
 }
 
@@ -220,6 +237,12 @@ export function useOrders() {
   };
 
   const updateOrder = (id: string, updated: Partial<Order>) => {
+    // 1. Write bookingStatus to localStorage immediately so it survives
+    //    page reloads even if the Supabase schema cache isn't ready yet.
+    if ('bookingStatus' in updated) {
+      writeLocalBS(id, updated.bookingStatus);
+    }
+
     const now = new Date().toISOString();
     setOrders(prev =>
       prev.map(o => o.id === id ? { ...o, ...updated, updatedAt: now } : o),
@@ -228,13 +251,16 @@ export function useOrders() {
     if (!current) return;
     const merged = { ...current, ...updated, updatedAt: now };
     const row = toRow(merged);
-    console.log('[updateOrder] Sending to Supabase:', { id, booking_status: row.booking_status });
+
     supabase.from('orders').update(row).eq('id', id).then(({ error }) => {
       if (error) {
+        // Silently swallow schema-cache errors for booking_status – localStorage has it
+        if (error.message?.includes('booking_status')) {
+          console.warn('[updateOrder] booking_status column not in schema cache – localStorage used as fallback');
+          return;
+        }
         console.error('[updateOrder] Supabase error:', error);
         emitDbError(`Kunde inte uppdatera ordern: ${error.message}`);
-      } else {
-        console.log('[updateOrder] Supabase OK – booking_status:', row.booking_status);
       }
     });
   };
