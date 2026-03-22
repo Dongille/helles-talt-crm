@@ -46,6 +46,7 @@ function fromRow(row: any): Order {
     pickupTime:               row.pickup_time    ?? undefined,
     archivedAt:               row.archived_at    ?? undefined,
     invoicedAt:               row.invoiced_at    ?? undefined,
+    bookingStatus:            (row.booking_status as Order['bookingStatus']) ?? undefined,
   };
 }
 
@@ -82,8 +83,9 @@ function toRow(order: Order): Record<string, any> {
     quote_validity_custom_date:  order.quoteValidityCustomDate   ?? null,
     delivery_time:               order.deliveryTime  ?? null,
     pickup_time:                 order.pickupTime    ?? null,
-    archived_at:                 order.archivedAt   ?? null,
-    invoiced_at:                 order.invoicedAt   ?? null,
+    archived_at:                 order.archivedAt    ?? null,
+    invoiced_at:                 order.invoicedAt    ?? null,
+    booking_status:              order.bookingStatus ?? null,
   };
 }
 

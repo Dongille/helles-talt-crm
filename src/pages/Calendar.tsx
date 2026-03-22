@@ -3,8 +3,9 @@ import { useOrders } from '../hooks/useOrders';
 import { useAppContext } from '../context/AppContext';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, startOfWeek, endOfWeek, isSameMonth, isToday, isSameDay, parseISO, addMonths, subMonths } from 'date-fns';
 import { sv } from 'date-fns/locale';
-import { ChevronLeft, ChevronRight, Truck, Package, Star } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Truck, Package, Star, FileText } from 'lucide-react';
 import type { Order } from '../types';
+import { generateAndPrint } from '../components/PdfGenerator/generateHtml';
 
 export default function Calendar() {
   const { orders, isLoading, fetchError } = useOrders();
@@ -223,11 +224,34 @@ export default function Calendar() {
 }
 
 function OrderCard({ order }: { order: Order }) {
+  const [loading, setLoading] = useState(false);
+
+  const handlePdf = async () => {
+    setLoading(true);
+    try {
+      await generateAndPrint(order, 'bekräftelse');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="p-3 bg-gray-50 rounded-lg mb-2 text-sm">
-      <p className="font-semibold text-gray-800">{order.firstName} {order.lastName}</p>
-      <p className="text-xs text-gray-500">{order.address}, {order.city}</p>
-      <p className="text-xs text-gray-400 mt-1">{order.region} · {order.items.slice(0, 2).map(i => i.productName).join(', ')}{order.items.length > 2 ? '...' : ''}</p>
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0">
+          <p className="font-semibold text-gray-800">{order.firstName} {order.lastName}</p>
+          <p className="text-xs text-gray-500">{order.address}, {order.city}</p>
+          <p className="text-xs text-gray-400 mt-1">{order.region} · {order.items.slice(0, 2).map(i => i.productName).join(', ')}{order.items.length > 2 ? '...' : ''}</p>
+        </div>
+        <button
+          onClick={handlePdf}
+          disabled={loading}
+          title="Öppna bekräftelse (PDF)"
+          style={{ flexShrink: 0, padding: 4, border: 'none', background: 'none', cursor: 'pointer', color: '#2d7a3a', opacity: loading ? 0.5 : 1 }}
+        >
+          {loading ? <span style={{ fontSize: 10 }}>...</span> : <FileText size={15} />}
+        </button>
+      </div>
     </div>
   );
 }
