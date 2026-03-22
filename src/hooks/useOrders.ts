@@ -223,7 +223,13 @@ export function useOrders() {
 
   const addOrder = (order: Order) => {
     setOrders(prev => [order, ...prev]);
-    supabase.from('orders').insert(toRow(order)).then(({ error }) => {
+
+    // Strip booking_status from INSERT – the column has a DB default ('kommande')
+    // and sending it triggers a schema-cache error if PostgREST hasn't reloaded yet.
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { booking_status: _bs, ...rowWithoutBS } = toRow(order);
+
+    supabase.from('orders').insert(rowWithoutBS).then(({ error }) => {
       if (error) {
         console.error('addOrder error', error);
         emitDbError(

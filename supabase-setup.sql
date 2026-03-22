@@ -81,13 +81,34 @@ create table if not exists public.orders (
   archived_at                 text,           -- ISO-8601 eller null
 
   -- Fakturering (sätts manuellt på faktureringssidan)
-  invoiced_at                 text            -- ISO-8601 eller null
+  invoiced_at                 text,           -- ISO-8601 eller null
+
+  -- Bokningsstatus (sätts manuellt: 'kommande' | 'färdig')
+  booking_status              text        not null default 'kommande'
 );
 
 alter table public.orders disable row level security;
 
+-- Lägg till booking_status om kolumnen saknas (idempotent)
+do $$
+begin
+  if not exists (
+    select 1 from information_schema.columns
+    where table_schema = 'public'
+      and table_name   = 'orders'
+      and column_name  = 'booking_status'
+  ) then
+    alter table public.orders
+      add column booking_status text not null default 'kommande';
+  end if;
+end;
+$$;
+
 -- Aktivera Realtime så att ändringar syns direkt i alla flikar
 alter publication supabase_realtime add table public.orders;
+
+-- Tvinga PostgREST att ladda om schema-cachen
+notify pgrst, 'reload schema';
 
 
 -- ── 2. INVENTORY ─────────────────────────────────────────────
