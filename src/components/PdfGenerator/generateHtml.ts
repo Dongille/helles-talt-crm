@@ -34,6 +34,10 @@ export async function generateAndPrint(
   order: Order,
   type: 'offert' | 'bekräftelse'
 ): Promise<void> {
+  // Open the window SYNCHRONOUSLY before any awaits so mobile browsers
+  // recognise it as originating from a direct user gesture (not blocked).
+  const win = window.open('', '_blank');
+
   const calc = calculateOrder(order);
   const logo = await loadLogoBase64();
   const isOffert = type === 'offert';
@@ -369,9 +373,13 @@ hr.tdiv { border: none; border-top: 0.8px solid #aaa; margin: 4px 0; }
 </body>
 </html>`;
 
-  const win = window.open('', '_blank');
   if (win) {
     win.document.write(html);
     win.document.close();
+  } else {
+    // Fallback for browsers that blocked the pre-opened window
+    const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    window.open(url, '_blank');
   }
 }
