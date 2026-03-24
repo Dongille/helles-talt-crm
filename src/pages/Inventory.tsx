@@ -4,7 +4,7 @@ import { useOrders } from '../hooks/useOrders';
 import { useAppContext } from '../context/AppContext';
 import { useLogbook } from '../hooks/useLogbook';
 import { PRODUCTS, type ProductDefinition } from '../data/products';
-import { parseISO, isWithinInterval } from 'date-fns';
+import { parseISO } from 'date-fns';
 
 // ── Mirror of the tab/subcat structure from OrderForm D ───────────────────
 const TABS = ['Paketerbjudande', 'Partytält', 'Möbler', 'Festutrustning', 'Aktiviteter'] as const;
@@ -77,13 +77,19 @@ export default function Inventory() {
   };
 
   const getBooked = (productId: string, rgn: 'Göteborg' | 'Skaraborg') => {
+    const filterStart = dateFrom ? parseISO(dateFrom) : null;
+    const filterEnd   = dateTo   ? parseISO(dateTo)   : null;
+
     const filtered = orders.filter(o => {
       if (o.status !== 'bokning' || o.region !== rgn) return false;
-      if (dateFrom || dateTo) {
-        const d = parseISO(o.eventDate);
-        const from = dateFrom ? parseISO(dateFrom) : new Date('1970-01-01');
-        const to   = dateTo   ? parseISO(dateTo)   : new Date('2099-12-31');
-        if (!isWithinInterval(d, { start: from, end: to })) return false;
+      if (filterStart || filterEnd) {
+        // Booking period: deliveryDate → pickupDate (covers entire rental period)
+        // Fall back to eventDate if dates are missing
+        const bookingStart = o.deliveryDate ? parseISO(o.deliveryDate) : parseISO(o.eventDate);
+        const bookingEnd   = o.pickupDate   ? parseISO(o.pickupDate)   : (o.deliveryDate ? parseISO(o.deliveryDate) : parseISO(o.eventDate));
+        // Overlap check: booking active if bookingStart <= filterEnd AND bookingEnd >= filterStart
+        if (filterEnd   && bookingStart > filterEnd)   return false;
+        if (filterStart && bookingEnd   < filterStart) return false;
       }
       return true;
     });
