@@ -7,11 +7,10 @@ import { PRODUCTS, type ProductDefinition } from '../data/products';
 import { parseISO } from 'date-fns';
 
 // ── Mirror of the tab/subcat structure from OrderForm D ───────────────────
-const TABS = ['Paketerbjudande', 'Partytält', 'Möbler', 'Festutrustning', 'Aktiviteter'] as const;
+const TABS = ['Partytält', 'Möbler', 'Festutrustning', 'Aktiviteter'] as const;
 type Tab = typeof TABS[number];
 
 const TAB_SUBCATS: Record<Tab, string[]> = {
-  'Paketerbjudande': ['Enkelt paket', 'Standard paket', 'Premium paket'],
   'Partytält':       ['Semi tält', 'Pro tält', 'Sektionstält', 'Pagodatält', 'Pop-up tält'],
   'Möbler':          ['Sittplatser', 'Bord', 'Textiler'],
   'Festutrustning':  ['Festutrustning', 'Porslin'],
@@ -28,7 +27,7 @@ const PARTYTÄLT_SUBCAT: Record<string, string> = {
 
 function getGroup(p: ProductDefinition): { tab: Tab; subcat: string } {
   if (p.category === 'Paketerbjudanden')
-    return { tab: 'Paketerbjudande', subcat: p.name.split(' ')[0] + ' paket' };
+    return { tab: 'Partytält', subcat: '' }; // packages excluded from display
   if (p.category === 'Partytält')
     return { tab: 'Partytält', subcat: PARTYTÄLT_SUBCAT[p.subcategory ?? ''] ?? '' };
   if (p.category === 'Möbler – Stolar & Bänkset') return { tab: 'Möbler', subcat: 'Sittplatser' };
@@ -56,9 +55,8 @@ export default function Inventory() {
   const { orders } = useOrders();
   const { region } = useAppContext();
   const { addEntry } = useLogbook();
-  const [activeTab, setActiveTab]     = useState<Tab>('Paketerbjudande');
+  const [activeTab, setActiveTab]     = useState<Tab>('Partytält');
   const [activeSubcat, setActiveSubcat] = useState<Record<string, string>>({
-    Paketerbjudande: 'Enkelt paket',
     Partytält:       'Semi tält',
     Möbler:          'Sittplatser',
     Festutrustning:  'Festutrustning',
@@ -69,11 +67,20 @@ export default function Inventory() {
   const currentSubcat = activeSubcat[activeTab] ?? TAB_SUBCATS[activeTab][0] ?? '';
   const visibleProducts = getVisibleProducts(activeTab, currentSubcat);
 
-  // Premium packages implicitly include chairs + tables – deduct them from inventory
-  const PREMIUM_IMPLICIT: Record<string, Record<string, number>> = {
-    'pak-4x6-premium':  { 'stol-klapp-svart': 36, 'bord-180': 6 },
-    'pak-4x8-premium':  { 'stol-klapp-svart': 48, 'bord-180': 8 },
-    'pak-4x10-premium': { 'stol-klapp-svart': 60, 'bord-180': 10 },
+  // All packages expand to their constituent products for inventory deduction
+  const PACKAGE_IMPLICIT: Record<string, Record<string, number>> = {
+    // Enkelt paket → semi tent only
+    'pak-4x6-enkelt':   { 'talt-semi-4x6': 1 },
+    'pak-4x8-enkelt':   { 'talt-semi-4x8': 1 },
+    'pak-4x10-enkelt':  { 'talt-semi-4x10': 1 },
+    // Standard paket → semi tent only
+    'pak-4x6-standard': { 'talt-semi-4x6': 1 },
+    'pak-4x8-standard': { 'talt-semi-4x8': 1 },
+    'pak-4x10-standard':{ 'talt-semi-4x10': 1 },
+    // Premium paket → semi tent + black chairs + tables
+    'pak-4x6-premium':  { 'talt-semi-4x6': 1, 'stol-klapp-svart': 36, 'bord-180': 6 },
+    'pak-4x8-premium':  { 'talt-semi-4x8': 1, 'stol-klapp-svart': 48, 'bord-180': 8 },
+    'pak-4x10-premium': { 'talt-semi-4x10': 1, 'stol-klapp-svart': 60, 'bord-180': 10 },
   };
 
   const getBooked = (productId: string, rgn: 'Göteborg' | 'Skaraborg') => {
@@ -98,9 +105,9 @@ export default function Inventory() {
       // Direct line-item quantity
       const direct = o.items.find(i => i.productId === productId)?.quantity ?? 0;
 
-      // Implicit quantity from Premium packages
+      // Implicit quantity from package expansion
       const implicit = o.items.reduce((s, item) => {
-        const rule = PREMIUM_IMPLICIT[item.productId];
+        const rule = PACKAGE_IMPLICIT[item.productId];
         return s + (rule?.[productId] ?? 0) * item.quantity;
       }, 0);
 
