@@ -21,10 +21,13 @@ export default function OrderListPage({ statusFilter }: Props) {
   const [sortBy, setSortBy] = useState<'lastName' | 'eventDate'>('eventDate');
   const [loadingPdf, setLoadingPdf] = useState<string | null>(null);
   const [cancelConfirmId, setCancelConfirmId] = useState<string | null>(null);
+  const [localRegion, setLocalRegion] = useState<'Alla' | 'Göteborg' | 'Skaraborg'>('Alla');
+
+  const effectiveRegion = localRegion !== 'Alla' ? localRegion : region;
 
   const list = orders
     .filter((o) => o.status === statusFilter)
-    .filter((o) => region === 'Alla' || o.region === region)
+    .filter((o) => effectiveRegion === 'Alla' || o.region === effectiveRegion)
     // Hide bookings manually marked as 'färdig' (they move to Invoicing)
     .filter((o) => statusFilter !== 'bokning' || (o.bookingStatus ?? 'kommande') !== 'färdig')
     .sort((a, b) =>
@@ -120,20 +123,39 @@ export default function OrderListPage({ statusFilter }: Props) {
           <h2 className="font-serif text-2xl font-bold text-[#2d7a3a]">{title}</h2>
           <p className="text-gray-500 text-sm mt-1">{list.length} poster</p>
         </div>
-        <button
-          onClick={() => {
-            setEditingOrder(undefined);
-            setShowForm(true);
-          }}
-          style={
-            statusFilter === 'förfrågan'
-              ? { border: '1px solid #2d7a3a', borderRadius: 6, padding: '11px 20px', color: '#2d7a3a', background: 'white', fontWeight: 600, fontSize: 14, cursor: 'pointer', minHeight: 44 }
-              : { background: '#2d7a3a', borderRadius: 6, padding: '11px 20px', color: 'white', border: 'none', fontWeight: 600, fontSize: 14, cursor: 'pointer', minHeight: 44 }
-          }
-          className="w-full sm:w-auto"
-        >
-          {statusFilter === 'förfrågan' ? '+ Ny förfrågan' : '+ Ny bokning'}
-        </button>
+        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+          {/* Local region filter pills */}
+          <div style={{ display: 'flex', border: '1px solid #e5e5e5', borderRadius: 20, overflow: 'hidden', flexShrink: 0 }}>
+            {(['Alla', 'Göteborg', 'Skaraborg'] as const).map(r => (
+              <button
+                key={r}
+                onClick={() => setLocalRegion(r)}
+                style={{
+                  padding: '5px 12px', fontSize: 12, fontWeight: 500, border: 'none', cursor: 'pointer',
+                  background: localRegion === r ? '#2d7a3a' : 'white',
+                  color: localRegion === r ? 'white' : '#555',
+                  transition: 'all 0.15s',
+                }}
+              >
+                {r}
+              </button>
+            ))}
+          </div>
+          <button
+            onClick={() => {
+              setEditingOrder(undefined);
+              setShowForm(true);
+            }}
+            style={
+              statusFilter === 'förfrågan'
+                ? { border: '1px solid #2d7a3a', borderRadius: 6, padding: '11px 20px', color: '#2d7a3a', background: 'white', fontWeight: 600, fontSize: 14, cursor: 'pointer', minHeight: 44 }
+                : { background: '#2d7a3a', borderRadius: 6, padding: '11px 20px', color: 'white', border: 'none', fontWeight: 600, fontSize: 14, cursor: 'pointer', minHeight: 44 }
+            }
+            className="w-full sm:w-auto"
+          >
+            {statusFilter === 'förfrågan' ? '+ Ny förfrågan' : '+ Ny bokning'}
+          </button>
+        </div>
       </div>
 
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">

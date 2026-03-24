@@ -122,7 +122,10 @@ export default function Calendar() {
             <div className="grid grid-cols-7">
               {days.map(day => {
                 const { deliveries, pickups, events, selfDeliveries, selfReturns } = getEventsForDay(day);
-                const total   = deliveries.length + pickups.length + events.length + selfDeliveries.length + selfReturns.length;
+                const total     = deliveries.length + pickups.length + events.length + selfDeliveries.length + selfReturns.length;
+                // Count how many chips are actually rendered (1 per non-empty category)
+                const shownChips = (deliveries.length > 0 ? 1 : 0) + (pickups.length > 0 ? 1 : 0) + (events.length > 0 ? 1 : 0) + (selfDeliveries.length > 0 ? 1 : 0) + (selfReturns.length > 0 ? 1 : 0);
+                const overflow  = total - shownChips;
                 const inMonth = isSameMonth(day, currentMonth);
                 const today   = isToday(day);
                 const selected = selectedDay && isSameDay(day, selectedDay);
@@ -170,8 +173,8 @@ export default function Calendar() {
                           {o.lastName}
                         </div>
                       ))}
-                      {total > 4 && (
-                        <div className="text-[10px] text-gray-400">+{total - 4} fler</div>
+                      {overflow > 0 && (
+                        <div className="text-[10px] text-gray-400">+{overflow} fler</div>
                       )}
                     </div>
                   </div>

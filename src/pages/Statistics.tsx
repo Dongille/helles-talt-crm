@@ -21,7 +21,11 @@ const PERIOD_OPTS: { value: Period; label: string }[] = [
 
 const orderValue = (o: Order): number => {
   const sub = o.items.reduce(
-    (s, i) => s + i.quantity * i.unitPrice + (i.includesMontage ? i.quantity * i.montageUnitPrice : 0),
+    (s, i) =>
+      s +
+      i.quantity * i.unitPrice +
+      (i.includesMontage ? i.quantity * i.montageUnitPrice : 0) +
+      (i.includesDishwashing ? i.quantity * 10 : 0),
     0,
   );
   return sub * (1 - o.discountPercent / 100);
