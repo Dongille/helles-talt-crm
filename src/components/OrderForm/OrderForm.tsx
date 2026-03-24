@@ -172,6 +172,7 @@ export default function OrderForm({ order, initialStatus, lockedStatus, onSave, 
         includesMontage: false,
         montageUnitPrice: product.montagePrice === 'offert' ? 0 : (product.montagePrice as number),
         isOffertPrice: product.basePrice === 'offert',
+        ...(product.hasColorVariant ? { colorVariant: 'Vit' } : {}),
       };
       return { ...prev, items: [...prev.items, newItem] };
     });

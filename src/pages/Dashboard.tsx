@@ -106,7 +106,8 @@ export default function Dashboard() {
                 <li key={o.id} className="flex items-center justify-between py-2 border-b border-gray-50 last:border-0">
                   <div>
                     <p className="font-medium text-sm">{o.firstName} {o.lastName}</p>
-                    <p className="text-xs text-gray-500">{o.selfPickup ? 'Kunden hämtar själv' : `${o.address}, ${o.city}`}</p>
+                    <p className="text-xs text-gray-500">{o.address}, {o.city}</p>
+                    {o.selfPickup && <p className="text-xs text-gray-400">Kunden hämtar själv</p>}
                   </div>
                   <div className="text-right">
                     <span className={`text-xs px-2 py-0.5 rounded-full ${o.selfPickup ? 'bg-gray-100 text-gray-600' : 'bg-green-100 text-green-700'}`}>
