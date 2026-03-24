@@ -69,19 +69,38 @@ export default function Inventory() {
   const currentSubcat = activeSubcat[activeTab] ?? TAB_SUBCATS[activeTab][0] ?? '';
   const visibleProducts = getVisibleProducts(activeTab, currentSubcat);
 
-  const getBooked = (productId: string, rgn: 'Göteborg' | 'Skaraborg') =>
-    orders
-      .filter(o => {
-        if (o.status !== 'bokning' || o.region !== rgn) return false;
-        if (dateFrom || dateTo) {
-          const d = parseISO(o.eventDate);
-          const from = dateFrom ? parseISO(dateFrom) : new Date('1970-01-01');
-          const to   = dateTo   ? parseISO(dateTo)   : new Date('2099-12-31');
-          if (!isWithinInterval(d, { start: from, end: to })) return false;
-        }
-        return true;
-      })
-      .reduce((sum, o) => sum + (o.items.find(i => i.productId === productId)?.quantity ?? 0), 0);
+  // Premium packages implicitly include chairs + tables – deduct them from inventory
+  const PREMIUM_IMPLICIT: Record<string, Record<string, number>> = {
+    'pak-4x6-premium':  { 'stol-klapp-vit': 36, 'bord-180': 6 },
+    'pak-4x8-premium':  { 'stol-klapp-vit': 48, 'bord-180': 8 },
+    'pak-4x10-premium': { 'stol-klapp-vit': 60, 'bord-180': 10 },
+  };
+
+  const getBooked = (productId: string, rgn: 'Göteborg' | 'Skaraborg') => {
+    const filtered = orders.filter(o => {
+      if (o.status !== 'bokning' || o.region !== rgn) return false;
+      if (dateFrom || dateTo) {
+        const d = parseISO(o.eventDate);
+        const from = dateFrom ? parseISO(dateFrom) : new Date('1970-01-01');
+        const to   = dateTo   ? parseISO(dateTo)   : new Date('2099-12-31');
+        if (!isWithinInterval(d, { start: from, end: to })) return false;
+      }
+      return true;
+    });
+
+    return filtered.reduce((sum, o) => {
+      // Direct line-item quantity
+      const direct = o.items.find(i => i.productId === productId)?.quantity ?? 0;
+
+      // Implicit quantity from Premium packages
+      const implicit = o.items.reduce((s, item) => {
+        const rule = PREMIUM_IMPLICIT[item.productId];
+        return s + (rule?.[productId] ?? 0) * item.quantity;
+      }, 0);
+
+      return sum + direct + implicit;
+    }, 0);
+  };
 
   const getQty = (productId: string) => {
     const inv = inventory.find(i => i.productId === productId);
