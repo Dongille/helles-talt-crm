@@ -71,9 +71,9 @@ export default function Inventory() {
 
   // Premium packages implicitly include chairs + tables – deduct them from inventory
   const PREMIUM_IMPLICIT: Record<string, Record<string, number>> = {
-    'pak-4x6-premium':  { 'stol-klapp-vit': 36, 'bord-180': 6 },
-    'pak-4x8-premium':  { 'stol-klapp-vit': 48, 'bord-180': 8 },
-    'pak-4x10-premium': { 'stol-klapp-vit': 60, 'bord-180': 10 },
+    'pak-4x6-premium':  { 'stol-klapp-svart': 36, 'bord-180': 6 },
+    'pak-4x8-premium':  { 'stol-klapp-svart': 48, 'bord-180': 8 },
+    'pak-4x10-premium': { 'stol-klapp-svart': 60, 'bord-180': 10 },
   };
 
   const getBooked = (productId: string, rgn: 'Göteborg' | 'Skaraborg') => {
