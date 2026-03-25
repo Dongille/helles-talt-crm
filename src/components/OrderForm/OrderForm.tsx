@@ -5,7 +5,7 @@ import { PRODUCTS } from '../../data/products';
 import { calculateOrder, formatSEK } from '../../utils/calculations';
 import { X, Plus, Minus } from 'lucide-react';
 
-const TABS = ['Paketerbjudande', 'Partytält', 'Möbler', 'Festutrustning', 'Aktiviteter', 'Anpassa'] as const;
+const TABS = ['Paketerbjudande', 'Partytält', 'Möbler', 'Festutrustning', 'Anpassa'] as const;
 type Tab = typeof TABS[number];
 
 const TAB_SUBCATS: Record<Tab, string[]> = {
@@ -13,7 +13,6 @@ const TAB_SUBCATS: Record<Tab, string[]> = {
   'Partytält': ['Semi tält', 'Pro tält', 'Sektionstält', 'Pagodatält', 'Pop-up tält'],
   'Möbler': ['Sittplatser', 'Bord', 'Textiler'],
   'Festutrustning': ['Festutrustning', 'Porslin'],
-  'Aktiviteter': [],
   'Anpassa': [],
 };
 
@@ -64,7 +63,6 @@ const TAB_CATS: Record<Tab, string[]> = {
   'Partytält': ['Partytält'],
   'Möbler': ['Möbler – Stolar & Bänkset', 'Möbler – Bord & Ståbord', 'Möbler – Dukar & Överdrag', 'Porslin & Bestick'],
   'Festutrustning': ['Festutrustning & Övrigt'],
-  'Aktiviteter': [],
   'Anpassa': ['Anpassad'],
 };
 
@@ -172,7 +170,6 @@ export default function OrderForm({ order, initialStatus, lockedStatus, onSave, 
         includesMontage: false,
         montageUnitPrice: product.montagePrice === 'offert' ? 0 : (product.montagePrice as number),
         isOffertPrice: product.basePrice === 'offert',
-        ...(product.hasColorVariant ? { colorVariant: 'Vit' } : {}),
       };
       return { ...prev, items: [...prev.items, newItem] };
     });
@@ -527,7 +524,7 @@ export default function OrderForm({ order, initialStatus, lockedStatus, onSave, 
                 return visibleProducts.map(product => {
                   const item = getItemForProduct(product.id);
                   const qty = item?.quantity ?? 0;
-                  const hasOptions = qty > 0 && (product.basePrice === 'offert' || product.hasMontage || product.hasColorVariant || product.hasDishwashing);
+                  const hasOptions = qty > 0 && (product.basePrice === 'offert' || product.hasMontage || product.hasDishwashing);
                   return (
                     <div key={product.id}>
                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 100px 110px', padding: '9px 20px', background: qty > 0 ? accentLight : 'white', borderBottom: '1px solid #f0f0f0', alignItems: 'center', gap: 8 }}>
@@ -564,12 +561,6 @@ export default function OrderForm({ order, initialStatus, lockedStatus, onSave, 
                                 <input type="checkbox" checked={item?.includesDishwashing ?? false} onChange={e => updateItem(product.id, { includesDishwashing: e.target.checked })} />
                                 + Diskning (10 kr/st)
                               </label>
-                            )}
-                            {product.hasColorVariant && (
-                              <select value={item?.colorVariant ?? 'Vit'} onChange={e => updateItem(product.id, { colorVariant: e.target.value as 'Vit' | 'Svart' })} style={{ border: '1px solid #e0e0e0', borderRadius: 6, padding: '3px 8px', fontSize: 12 }}>
-                                <option value="Vit">Vit</option>
-                                <option value="Svart">Svart</option>
-                              </select>
                             )}
                           </div>
                           {product.isCustomPorslin && (

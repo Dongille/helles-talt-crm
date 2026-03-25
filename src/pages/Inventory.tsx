@@ -7,14 +7,13 @@ import { PRODUCTS, type ProductDefinition } from '../data/products';
 import { parseISO } from 'date-fns';
 
 // ── Mirror of the tab/subcat structure from OrderForm D ───────────────────
-const TABS = ['Partytält', 'Möbler', 'Festutrustning', 'Aktiviteter'] as const;
+const TABS = ['Partytält', 'Möbler', 'Festutrustning'] as const;
 type Tab = typeof TABS[number];
 
 const TAB_SUBCATS: Record<Tab, string[]> = {
   'Partytält':       ['Semi tält', 'Pro tält', 'Sektionstält', 'Pagodatält', 'Pop-up tält'],
   'Möbler':          ['Sittplatser', 'Bord', 'Textiler'],
   'Festutrustning':  ['Festutrustning', 'Porslin'],
-  'Aktiviteter':     [],
 };
 
 const PARTYTÄLT_SUBCAT: Record<string, string> = {
@@ -35,7 +34,7 @@ function getGroup(p: ProductDefinition): { tab: Tab; subcat: string } {
   if (p.category === 'Möbler – Dukar & Överdrag')  return { tab: 'Möbler', subcat: 'Textiler' };
   if (p.category === 'Porslin & Bestick')           return { tab: 'Festutrustning', subcat: 'Porslin' };
   if (p.category === 'Festutrustning & Övrigt')     return { tab: 'Festutrustning', subcat: 'Festutrustning' };
-  return { tab: 'Aktiviteter', subcat: '' };
+  return { tab: 'Festutrustning', subcat: '' }; // fallback – hidden by subcat filter
 }
 
 function getVisibleProducts(tab: Tab, subcat: string): ProductDefinition[] {
