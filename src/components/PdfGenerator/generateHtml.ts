@@ -1,5 +1,6 @@
 import type { Order } from '../../types';
 import { calculateOrder } from '../../utils/calculations';
+import { resolveDisplayName } from '../../utils/legacyProductMapping';
 
 // Swedish price format: 3 500,00
 function fmt(amount: number): string {
@@ -101,7 +102,7 @@ export async function generateAndPrint(
 
   const articleRows = order.items
     .map(item => {
-      const name = esc(item.productName) + (item.colorVariant ? ` \u2013 ${esc(item.colorVariant)}` : '');
+      const name = esc(resolveDisplayName(item));
       const lineTotal = item.quantity * item.unitPrice;
       const montageTotal = item.quantity * item.montageUnitPrice;
       const pkgContents = PACKAGE_CONTENTS[item.productId] ?? [];

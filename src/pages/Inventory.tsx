@@ -5,6 +5,7 @@ import { useAppContext } from '../context/AppContext';
 import { useLogbook } from '../hooks/useLogbook';
 import { PRODUCTS, type ProductDefinition } from '../data/products';
 import { parseISO } from 'date-fns';
+import { resolveProductId } from '../utils/legacyProductMapping';
 
 // ── Mirror of the tab/subcat structure from OrderForm D ───────────────────
 const TABS = ['Partytält', 'Möbler', 'Festutrustning'] as const;
@@ -101,8 +102,10 @@ export default function Inventory() {
     });
 
     return filtered.reduce((sum, o) => {
-      // Direct line-item quantity
-      const direct = o.items.find(i => i.productId === productId)?.quantity ?? 0;
+      // Direct line-item quantity (also resolve legacy id+color → new id)
+      const direct = o.items
+        .filter(i => (i.productId === productId) || (resolveProductId(i) === productId))
+        .reduce((s, i) => s + i.quantity, 0);
 
       // Implicit quantity from package expansion
       const implicit = o.items.reduce((s, item) => {

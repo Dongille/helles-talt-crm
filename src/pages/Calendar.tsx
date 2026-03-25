@@ -6,6 +6,7 @@ import { sv } from 'date-fns/locale';
 import { ChevronLeft, ChevronRight, Truck, Package, Star, FileText } from 'lucide-react';
 import type { Order } from '../types';
 import { generateAndPrint } from '../components/PdfGenerator/generateHtml';
+import { resolveDisplayName } from '../utils/legacyProductMapping';
 
 export default function Calendar() {
   const { orders, isLoading, fetchError } = useOrders();
@@ -265,7 +266,7 @@ function OrderCard({ order }: { order: Order }) {
         <div className="min-w-0">
           <p className="font-semibold text-gray-800">{order.firstName} {order.lastName}</p>
           <p className="text-xs text-gray-500">{order.address}, {order.city}</p>
-          <p className="text-xs text-gray-400 mt-1">{order.region} · {order.items.slice(0, 2).map(i => i.productName).join(', ')}{order.items.length > 2 ? '...' : ''}</p>
+          <p className="text-xs text-gray-400 mt-1">{order.region} · {order.items.slice(0, 2).map(i => resolveDisplayName(i)).join(', ')}{order.items.length > 2 ? '...' : ''}</p>
         </div>
         <button
           onClick={handlePdf}
