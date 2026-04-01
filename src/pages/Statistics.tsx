@@ -141,31 +141,13 @@ export default function Statistics() {
   const convRate          = totalRequests > 0 ? (totalBookings / totalRequests) * 100 : 0;
   const totalBookingValue = bookings.reduce((s, o) => s + orderValue(o), 0);
   const avgBookingValue   = totalBookings > 0 ? totalBookingValue / totalBookings : 0;
-  const totalRequestValue = requests.reduce((s, o) => s + orderValue(o), 0);
-
-  // Tillväxt: jämför innevarande kalenderår vs föregående kalenderår (ur alla ordrar)
-  const curYearStr  = String(getYear(now));
-  const prevYearStr = String(getYear(now) - 1);
-  const curYearVal  = orders
-    .filter(o => o.status === 'bokning' && format(parseISO(o.createdAt), 'yyyy') === curYearStr)
-    .reduce((s, o) => s + orderValue(o), 0);
-  const prevYearVal = orders
-    .filter(o => o.status === 'bokning' && format(parseISO(o.createdAt), 'yyyy') === prevYearStr)
-    .reduce((s, o) => s + orderValue(o), 0);
-  const growthPct   = prevYearVal > 0 ? ((curYearVal - prevYearVal) / prevYearVal) * 100 : null;
-  const growthLabel = growthPct === null
-    ? '0 %'
-    : `${growthPct >= 0 ? '↑' : '↓'} ${growthPct >= 0 ? '+' : ''}${Math.round(growthPct)} %`;
-  const growthColor = growthPct === null ? '#111111' : growthPct >= 0 ? '#2d7a3a' : '#ef4444';
 
   const kpiCards = [
-    { label: 'Förfrågningar',          value: String(totalRequests),                  sub: 'totalt antal' },
-    { label: 'Ordervärde förfrågan',   value: `${fmt(totalRequestValue)} kr`,         sub: 'exkl. moms' },
-    { label: 'Bokningar',              value: String(totalBookings),                  sub: 'totalt antal' },
-    { label: 'Ordervärde bokningar',   value: `${fmt(totalBookingValue)} kr`,         sub: 'exkl. moms' },
-    { label: 'Snitt per bokning',      value: `${fmt(avgBookingValue)} kr`,           sub: 'exkl. moms' },
-    { label: 'Konverteringsgrad',      value: fmtPct(convRate),                       sub: 'förfrågan → bokning' },
-    { label: 'Tillväxt', value: growthLabel, sub: `${curYearStr} → ${prevYearStr}`, valueColor: growthColor },
+    { label: 'Förfrågningar',        value: String(totalRequests),          sub: 'totalt antal' },
+    { label: 'Bokningar',            value: String(totalBookings),          sub: 'totalt antal' },
+    { label: 'Ordervärde bokningar', value: `${fmt(totalBookingValue)} kr`, sub: 'exkl. moms' },
+    { label: 'Snitt per bokning',    value: `${fmt(avgBookingValue)} kr`,   sub: 'exkl. moms' },
+    { label: 'Konverteringsgrad',    value: fmtPct(convRate),               sub: 'förfrågan → bokning' },
   ];
 
   // ── 2. Månadsslots (används av konvertering & säsong) ─────────────────────
