@@ -133,7 +133,6 @@ export default function Statistics() {
   [orders, cutoff]);
 
   const bookings = filtered.filter(o => o.status === 'bokning');
-  const requests = filtered.filter(o => o.status === 'förfrågan');
 
   // ── 1. KPI ────────────────────────────────────────────────────────────────
   const totalRequests     = filtered.length;
@@ -233,7 +232,7 @@ export default function Statistics() {
 
       {/* ── 1. KPI-kort ── */}
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-3">
-        {kpiCards.map(({ label, value, sub, valueColor }) => (
+        {kpiCards.map(({ label, value, sub, valueColor }: { label: string; value: string; sub: string; valueColor?: string }) => (
           <div key={label} style={{ background: 'white', borderRadius: 14, border: '1px solid #f0f0f0', boxShadow: '0 1px 4px rgba(0,0,0,0.06)', padding: '16px 18px' }}>
             <p style={{ margin: 0, fontSize: 11, fontWeight: 700, color: '#999', textTransform: 'uppercase', letterSpacing: '0.4px' }}>{label}</p>
             <p style={{ margin: '6px 0 2px', fontSize: 22, fontWeight: 700, color: valueColor ?? '#111111' }}>{value}</p>
