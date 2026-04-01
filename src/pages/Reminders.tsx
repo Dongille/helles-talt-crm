@@ -5,7 +5,7 @@ import { useOrders } from '../hooks/useOrders';
 import type { Reminder } from '../types';
 import { Bell, Plus, Pencil, Trash2, X, CheckCircle, Circle } from 'lucide-react';
 
-const accent = '#2d7a3a';
+const accent = '#ef4444';
 
 function isOverdue(r: Reminder) {
   return r.status === 'aktiv' && r.reminderDate < new Date().toISOString().slice(0, 10);

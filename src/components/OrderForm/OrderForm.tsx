@@ -4,7 +4,8 @@ import type { Order, OrderItem } from '../../types';
 import { PRODUCTS } from '../../data/products';
 import { calculateOrder, formatSEK } from '../../utils/calculations';
 import { useReminders } from '../../hooks/useReminders';
-import { X, Plus, Minus, Bell } from 'lucide-react';
+import { useStaff } from '../../hooks/useStaff';
+import { X, Plus, Minus, Bell, Users } from 'lucide-react';
 
 const TABS = ['Paketerbjudande', 'Partytält', 'Möbler', 'Festutrustning', 'Anpassa'] as const;
 type Tab = typeof TABS[number];
@@ -112,6 +113,8 @@ export default function OrderForm({ order, initialStatus, lockedStatus, onSave, 
   const [reminderTitle, setReminderTitle]   = useState('');
   const [reminderDate,  setReminderDate]    = useState('');
   const { addReminder } = useReminders();
+  const { staff, schedules } = useStaff();
+  const orderSchedules = order ? schedules.filter(s => s.orderId === order.id) : [];
   const [activeTab, setActiveTab] = useState<Tab>('Paketerbjudande');
   const [activeSubcat, setActiveSubcat] = useState<Record<string, string>>({
     Paketerbjudande: 'Enkelt paket',
@@ -692,6 +695,33 @@ export default function OrderForm({ order, initialStatus, lockedStatus, onSave, 
               className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#2d7a3a] resize-none"
             />
           </section>
+
+          {/* Schemalagd personal (read-only, only when editing an existing order) */}
+          {order && orderSchedules.length > 0 && (
+            <section className="bg-white rounded-xl shadow-sm overflow-hidden">
+              <div className="px-5 py-4">
+                <h3 style={{ fontWeight: 600, fontSize: 13, color: '#374151', display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  <Users size={14} color={accent} /> Personal
+                </h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {orderSchedules.map(s => {
+                    const member = staff.find(m => m.id === s.staffId);
+                    return (
+                      <div key={s.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', background: '#f9fafb', borderRadius: 8 }}>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <span style={{ fontWeight: 600, fontSize: 13 }}>{member?.name ?? s.staffId}</span>
+                          {s.role && <span style={{ fontSize: 12, color: '#6b7280', marginLeft: 8 }}>{s.role}</span>}
+                        </div>
+                        <span style={{ fontSize: 11, background: s.assignmentType === 'hämtning' ? '#fff7ed' : '#f0fdf4', color: s.assignmentType === 'hämtning' ? '#ea580c' : '#16a34a', border: `1px solid ${s.assignmentType === 'hämtning' ? '#fed7aa' : '#bbf7d0'}`, borderRadius: 10, padding: '1px 8px', fontWeight: 600, flexShrink: 0 }}>
+                          {s.assignmentType === 'hämtning' ? 'Hämtning' : 'Leverans'} · {s.scheduleDate}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </section>
+          )}
 
           {/* Påminnelse-sektion (valfri) */}
           <section className="bg-white rounded-xl shadow-sm overflow-hidden">

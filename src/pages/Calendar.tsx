@@ -1,11 +1,10 @@
 import { useState } from 'react';
 import { useOrders } from '../hooks/useOrders';
 import { useReminders } from '../hooks/useReminders';
-import { useStaff } from '../hooks/useStaff';
 import { useAppContext } from '../context/AppContext';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, startOfWeek, endOfWeek, isSameMonth, isToday, isSameDay, parseISO, addMonths, subMonths } from 'date-fns';
 import { sv } from 'date-fns/locale';
-import { ChevronLeft, ChevronRight, Truck, Package, Star, FileText, Bell, Users } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Truck, Package, Star, FileText, Bell } from 'lucide-react';
 import type { Order } from '../types';
 import { generateAndPrint } from '../components/PdfGenerator/generateHtml';
 import { resolveDisplayName } from '../utils/legacyProductMapping';
@@ -13,7 +12,6 @@ import { resolveDisplayName } from '../utils/legacyProductMapping';
 export default function Calendar() {
   const { orders, isLoading, fetchError } = useOrders();
   const { reminders } = useReminders();
-  const { staff, schedules } = useStaff();
   const { region } = useAppContext();
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDay, setSelectedDay] = useState<Date | null>(null);
@@ -29,9 +27,6 @@ export default function Calendar() {
 
   const getRemindersForDay = (day: Date) =>
     reminders.filter(r => r.status === 'aktiv' && r.reminderDate === format(day, 'yyyy-MM-dd'));
-
-  const getSchedulesForDay = (day: Date) =>
-    schedules.filter(s => s.scheduleDate === format(day, 'yyyy-MM-dd'));
 
   const getEventsForDay = (day: Date) => {
     const deliveries      = filtered.filter(o => o.deliveryDate && isSameDay(parseISO(o.deliveryDate), day) && !o.selfPickup);
@@ -121,10 +116,6 @@ export default function Calendar() {
           <div className="w-3 h-3 rounded-full" style={{ background: '#9333ea' }} />
           <span>Påminnelse</span>
         </div>
-        <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded-full" style={{ background: '#8b5cf6' }} />
-          <span>Personal</span>
-        </div>
       </div>
 
       <div className={`grid gap-5 ${selectedDay ? 'grid-cols-1 lg:grid-cols-[1fr_300px]' : 'grid-cols-1'}`}>
@@ -142,10 +133,9 @@ export default function Calendar() {
               {days.map(day => {
                 const { deliveries, pickups, events, selfDeliveries, selfReturns } = getEventsForDay(day);
                 const dayReminders = getRemindersForDay(day);
-                const daySchedules = getSchedulesForDay(day);
-                const total     = deliveries.length + pickups.length + events.length + selfDeliveries.length + selfReturns.length + dayReminders.length + daySchedules.length;
+                const total     = deliveries.length + pickups.length + events.length + selfDeliveries.length + selfReturns.length + dayReminders.length;
                 // Count how many chips are actually rendered (1 per non-empty category)
-                const shownChips = (deliveries.length > 0 ? 1 : 0) + (pickups.length > 0 ? 1 : 0) + (events.length > 0 ? 1 : 0) + (selfDeliveries.length > 0 ? 1 : 0) + (selfReturns.length > 0 ? 1 : 0) + (dayReminders.length > 0 ? 1 : 0) + (daySchedules.length > 0 ? 1 : 0);
+                const shownChips = (deliveries.length > 0 ? 1 : 0) + (pickups.length > 0 ? 1 : 0) + (events.length > 0 ? 1 : 0) + (selfDeliveries.length > 0 ? 1 : 0) + (selfReturns.length > 0 ? 1 : 0) + (dayReminders.length > 0 ? 1 : 0);
                 const overflow  = total - shownChips;
                 const inMonth = isSameMonth(day, currentMonth);
                 const today   = isToday(day);
@@ -194,15 +184,6 @@ export default function Calendar() {
                           {o.lastName}
                         </div>
                       ))}
-                      {daySchedules.slice(0, 1).map(s => {
-                        const member = staff.find(m => m.id === s.staffId);
-                        return (
-                          <div key={s.id} className="text-[10px] rounded px-1 py-0.5 truncate flex items-center gap-1" style={{ background: '#ede9fe', color: '#6d28d9' }}>
-                            <Users size={8} className="flex-shrink-0" />
-                            {member?.name ?? ''}
-                          </div>
-                        );
-                      })}
                       {dayReminders.slice(0, 1).map(r => (
                         <div key={r.id} className="text-[10px] rounded px-1 py-0.5 truncate flex items-center gap-1" style={{ background: '#f3e8ff', color: '#7e22ce' }}>
                           <Bell size={8} className="flex-shrink-0" />
@@ -223,7 +204,6 @@ export default function Calendar() {
         {/* Side panel */}
         {selectedDay && selectedEvents && (() => {
           const dayReminders = getRemindersForDay(selectedDay);
-          const daySchedules = getSchedulesForDay(selectedDay);
           return (
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 self-start">
             <h3 className="font-semibold text-[#2d7a3a] mb-4">
@@ -234,8 +214,7 @@ export default function Calendar() {
              selectedEvents.events.length     === 0 &&
              selectedEvents.selfDeliveries.length === 0 &&
              selectedEvents.selfReturns.length    === 0 &&
-             dayReminders.length === 0 &&
-             daySchedules.length === 0 ? (
+             dayReminders.length === 0 ? (
               <p className="text-sm text-gray-400">Inga aktiviteter</p>
             ) : (
               <div className="space-y-4">
@@ -291,27 +270,6 @@ export default function Calendar() {
                           <p style={{ fontWeight: 600, fontSize: 13, color: '#6b21a8' }}>{r.title}</p>
                           {r.description && <p style={{ fontSize: 12, color: '#7e22ce', marginTop: 2 }}>{r.description}</p>}
                           {linked && <p style={{ fontSize: 11, color: '#9333ea', marginTop: 4 }}>🔗 {linked.firstName} {linked.lastName} – {linked.eventDate}</p>}
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-                {daySchedules.length > 0 && (
-                  <div>
-                    <h4 className="text-xs font-semibold uppercase tracking-wider mb-2 flex items-center gap-1.5" style={{ color: '#6d28d9' }}>
-                      <Users size={12} /> Personal
-                    </h4>
-                    {daySchedules.map(s => {
-                      const member = staff.find(m => m.id === s.staffId);
-                      const linked = orders.find(o => o.id === s.orderId);
-                      const icon = s.assignmentType === 'hämtning' ? '📦' : '🚚';
-                      const label = s.assignmentType === 'hämtning' ? 'Hämtning' : 'Leverans';
-                      return (
-                        <div key={s.id} style={{ background: '#ede9fe', borderRadius: 8, padding: '10px 12px', marginBottom: 6 }}>
-                          <p style={{ fontWeight: 600, fontSize: 13, color: '#4c1d95' }}>{icon} {label} – {member?.name ?? s.staffId}</p>
-                          {s.role && <p style={{ fontSize: 12, color: '#6d28d9' }}>{s.role}</p>}
-                          {linked && <p style={{ fontSize: 11, color: '#7c3aed', marginTop: 4 }}>🔗 {linked.firstName} {linked.lastName} – {linked.eventDate}</p>}
-                          {s.notes && <p style={{ fontSize: 11, color: '#8b5cf6', marginTop: 2 }}>{s.notes}</p>}
                         </div>
                       );
                     })}

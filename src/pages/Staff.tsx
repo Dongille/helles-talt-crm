@@ -7,11 +7,9 @@ import { Users, Plus, Pencil, Trash2, X, CalendarDays } from 'lucide-react';
 
 const accent = '#2d7a3a';
 
-type AssignmentChoice = 'leverans' | 'hämtning' | 'båda';
-
 const EMPTY_MEMBER: Omit<StaffMember, 'id' | 'createdAt'> = { name: '', role: '', phone: '', email: '', notes: '' };
-const EMPTY_SCHED: Omit<StaffSchedule, 'id' | 'createdAt'> & { assignmentChoice: AssignmentChoice } = {
-  staffId: '', orderId: undefined, scheduleDate: '', assignmentType: 'leverans', assignmentChoice: 'leverans', role: '', notes: '',
+const EMPTY_SCHED: Omit<StaffSchedule, 'id' | 'createdAt'> & { wantsLeverans: boolean; wantsHamtning: boolean } = {
+  staffId: '', orderId: undefined, scheduleDate: '', assignmentType: 'leverans', wantsLeverans: true, wantsHamtning: false, role: '', notes: '',
 };
 
 export default function Staff() {
@@ -22,7 +20,7 @@ export default function Staff() {
   const [editingMember, setEditingMember]   = useState<StaffMember | null>(null);
   const [memberForm, setMemberForm]         = useState(EMPTY_MEMBER);
 
-  const [showSchedForm, setShowSchedForm] = useState(false);
+  const [showSchedForm, setShowSchedForm] = useState<boolean>(false);
   const [schedForm, setSchedForm]         = useState<typeof EMPTY_SCHED>(EMPTY_SCHED);
 
   const activeBookings = orders.filter(o => o.status === 'bokning');
@@ -46,40 +44,28 @@ export default function Staff() {
 
   const openAddSched = (staffId?: string, orderId?: string) => {
     const order = orderId ? orders.find(o => o.id === orderId) : undefined;
-    setSchedForm({ ...EMPTY_SCHED, staffId: staffId ?? (staff[0]?.id ?? ''), orderId, scheduleDate: order?.deliveryDate ?? '', assignmentChoice: 'leverans', assignmentType: 'leverans' });
+    setSchedForm({ ...EMPTY_SCHED, staffId: staffId ?? (staff[0]?.id ?? ''), orderId, scheduleDate: order?.deliveryDate ?? '' });
     setShowSchedForm(true);
-  };
-
-  const handleAssignmentChange = (choice: AssignmentChoice) => {
-    const order = orders.find(o => o.id === schedForm.orderId);
-    let date = schedForm.scheduleDate;
-    if (choice === 'leverans' && order?.deliveryDate) date = order.deliveryDate;
-    if (choice === 'hämtning' && order?.pickupDate) date = order.pickupDate;
-    if (choice === 'båda' && order?.deliveryDate) date = order.deliveryDate;
-    setSchedForm(f => ({ ...f, assignmentChoice: choice, assignmentType: choice === 'hämtning' ? 'hämtning' : 'leverans', scheduleDate: date }));
   };
 
   const handleOrderChange = (oid: string | undefined) => {
     const o = oid ? orders.find(ord => ord.id === oid) : undefined;
-    let date = schedForm.scheduleDate;
-    if (o) {
-      if (schedForm.assignmentChoice === 'hämtning' && o.pickupDate) date = o.pickupDate;
-      else if (o.deliveryDate) date = o.deliveryDate;
-    }
+    const date = (o?.deliveryDate) ?? schedForm.scheduleDate;
     setSchedForm(f => ({ ...f, orderId: oid, scheduleDate: date }));
   };
 
   const saveSched = () => {
     if (!schedForm.staffId) return;
+    if (!schedForm.wantsLeverans && !schedForm.wantsHamtning) return;
     const now = new Date().toISOString();
     const order = orders.find(o => o.id === schedForm.orderId);
-    if (schedForm.assignmentChoice === 'båda' && order?.deliveryDate && order?.pickupDate) {
-      // Create two separate schedules
-      addSchedule({ id: uuidv4(), staffId: schedForm.staffId, orderId: schedForm.orderId || undefined, scheduleDate: order.deliveryDate, assignmentType: 'leverans', role: schedForm.role || undefined, notes: schedForm.notes || undefined, createdAt: now });
-      addSchedule({ id: uuidv4(), staffId: schedForm.staffId, orderId: schedForm.orderId || undefined, scheduleDate: order.pickupDate, assignmentType: 'hämtning', role: schedForm.role || undefined, notes: schedForm.notes || undefined, createdAt: now });
-    } else {
-      if (!schedForm.scheduleDate) return;
-      addSchedule({ id: uuidv4(), staffId: schedForm.staffId, orderId: schedForm.orderId || undefined, scheduleDate: schedForm.scheduleDate, assignmentType: schedForm.assignmentType ?? 'leverans', role: schedForm.role || undefined, notes: schedForm.notes || undefined, createdAt: now });
+    if (schedForm.wantsLeverans) {
+      const date = order?.deliveryDate ?? schedForm.scheduleDate;
+      if (date) addSchedule({ id: uuidv4(), staffId: schedForm.staffId, orderId: schedForm.orderId || undefined, scheduleDate: date, assignmentType: 'leverans', role: schedForm.role || undefined, notes: schedForm.notes || undefined, createdAt: now });
+    }
+    if (schedForm.wantsHamtning) {
+      const date = order?.pickupDate ?? schedForm.scheduleDate;
+      if (date) addSchedule({ id: uuidv4(), staffId: schedForm.staffId, orderId: schedForm.orderId || undefined, scheduleDate: date, assignmentType: 'hämtning', role: schedForm.role || undefined, notes: schedForm.notes || undefined, createdAt: now });
     }
     setShowSchedForm(false);
   };
@@ -126,8 +112,8 @@ export default function Staff() {
                   <p style={{ fontWeight: 600, fontSize: 14 }}>{m.name}</p>
                   {m.role && <p style={{ fontSize: 12, color: '#6b7280' }}>{m.role}</p>}
                   <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 4 }}>
-                    {m.phone && <span style={{ fontSize: 12, color: '#555' }}>📞 {m.phone}</span>}
-                    {m.email && <span style={{ fontSize: 12, color: '#555' }}>✉️ {m.email}</span>}
+                    {m.phone && <span style={{ fontSize: 12, color: '#555' }}>{m.phone}</span>}
+                    {m.email && <span style={{ fontSize: 12, color: '#555' }}>{m.email}</span>}
                   </div>
                   {m.notes && <p style={{ fontSize: 12, color: '#9ca3af', marginTop: 4 }}>{m.notes}</p>}
                 </div>
@@ -170,13 +156,12 @@ export default function Staff() {
               <div key={s.id} style={{ background: 'white', border: '1px solid #e5e5e5', borderRadius: 12, padding: '12px 16px', display: 'flex', gap: 12, alignItems: 'center' }}>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' }}>
-                    <span style={{ fontSize: 13 }}>{s.assignmentType === 'hämtning' ? '📦' : '🚚'}</span>
                     <span style={{ fontWeight: 600, fontSize: 14 }}>{staffName(s.staffId)}</span>
                     <span style={{ fontSize: 12, color: '#6b7280' }}>{s.scheduleDate}</span>
-                    <span style={{ fontSize: 11, color: s.assignmentType === 'hämtning' ? '#ea580c' : '#16a34a', fontWeight: 600 }}>{s.assignmentType === 'hämtning' ? 'Hämtning' : 'Leverans'}</span>
+                    <span style={{ fontSize: 11, background: s.assignmentType === 'hämtning' ? '#fff7ed' : '#f0fdf4', color: s.assignmentType === 'hämtning' ? '#ea580c' : '#16a34a', border: `1px solid ${s.assignmentType === 'hämtning' ? '#fed7aa' : '#bbf7d0'}`, borderRadius: 10, padding: '1px 7px', fontWeight: 600 }}>{s.assignmentType === 'hämtning' ? 'Hämtning' : 'Leverans'}</span>
                     {s.role && <span style={{ fontSize: 12, color: '#9ca3af' }}>{s.role}</span>}
                   </div>
-                  {s.orderId && <p style={{ fontSize: 12, color: '#6b7280', marginTop: 3 }}>🔗 {orderLabel(s.orderId)}</p>}
+                  {s.orderId && <p style={{ fontSize: 12, color: '#6b7280', marginTop: 3 }}>{orderLabel(s.orderId)}</p>}
                   {s.notes && <p style={{ fontSize: 12, color: '#9ca3af', marginTop: 2 }}>{s.notes}</p>}
                 </div>
                 <button onClick={() => { if (window.confirm('Ta bort pass?')) deleteSchedule(s.id); }} style={{ border: 'none', background: 'none', cursor: 'pointer', padding: 4, color: '#ef4444', borderRadius: 6, flexShrink: 0 }}>
@@ -247,19 +232,22 @@ export default function Staff() {
                 </select>
               </div>
               <div>
-                <label style={{ fontSize: 13, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 4 }}>Uppdragstyp *</label>
-                <div style={{ display: 'flex', gap: 6 }}>
-                  {(['leverans', 'hämtning', 'båda'] as const).map(c => (
-                    <button key={c} type="button" onClick={() => handleAssignmentChange(c)} style={{ flex: 1, padding: '8px 6px', border: `1px solid ${schedForm.assignmentChoice === c ? accent : '#e5e5e5'}`, borderRadius: 8, background: schedForm.assignmentChoice === c ? accent : 'white', color: schedForm.assignmentChoice === c ? 'white' : '#374151', fontWeight: 600, fontSize: 13, cursor: 'pointer', textTransform: 'capitalize' }}>
-                      {c === 'leverans' ? '🚚 Leverans' : c === 'hämtning' ? '📦 Hämtning' : '↔ Båda'}
-                    </button>
-                  ))}
+                <label style={{ fontSize: 13, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 8 }}>Uppdragstyp *</label>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 14 }}>
+                    <input type="checkbox" checked={schedForm.wantsLeverans} onChange={e => setSchedForm(f => ({ ...f, wantsLeverans: e.target.checked }))} style={{ width: 16, height: 16, cursor: 'pointer' }} />
+                    Leverans
+                  </label>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 14 }}>
+                    <input type="checkbox" checked={schedForm.wantsHamtning} onChange={e => setSchedForm(f => ({ ...f, wantsHamtning: e.target.checked }))} style={{ width: 16, height: 16, cursor: 'pointer' }} />
+                    Hämtning
+                  </label>
                 </div>
-                {schedForm.assignmentChoice === 'båda' && (
+                {schedForm.wantsLeverans && schedForm.wantsHamtning && (
                   <p style={{ fontSize: 11, color: '#6b7280', marginTop: 6 }}>Skapar automatiskt ett pass för leverans och ett för hämtning.</p>
                 )}
               </div>
-              {schedForm.assignmentChoice !== 'båda' && (
+              {!(schedForm.wantsLeverans && schedForm.wantsHamtning) && (
               <div>
                 <label style={{ fontSize: 13, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 4 }}>Datum *</label>
                 <input type="date" value={schedForm.scheduleDate} onChange={e => setSchedForm(f => ({ ...f, scheduleDate: e.target.value }))} style={{ width: '100%', border: '1px solid #e5e5e5', borderRadius: 8, padding: '8px 12px', fontSize: 14, outline: 'none', boxSizing: 'border-box' }} />
@@ -276,7 +264,7 @@ export default function Staff() {
             </div>
             <div style={{ display: 'flex', gap: 10, marginTop: 20 }}>
               <button onClick={() => setShowSchedForm(false)} style={{ flex: 1, padding: '10px 0', border: '1px solid #e5e5e5', borderRadius: 8, background: 'white', fontWeight: 600, fontSize: 14, cursor: 'pointer', color: '#555' }}>Avbryt</button>
-              <button onClick={saveSched} disabled={!schedForm.staffId || (schedForm.assignmentChoice !== 'båda' && !schedForm.scheduleDate)} style={{ flex: 2, padding: '10px 0', border: 'none', borderRadius: 8, background: accent, color: 'white', fontWeight: 600, fontSize: 14, cursor: 'pointer', opacity: (!schedForm.staffId || (schedForm.assignmentChoice !== 'båda' && !schedForm.scheduleDate)) ? 0.5 : 1 }}>
+              <button onClick={saveSched} disabled={!schedForm.staffId || (!schedForm.wantsLeverans && !schedForm.wantsHamtning)} style={{ flex: 2, padding: '10px 0', border: 'none', borderRadius: 8, background: accent, color: 'white', fontWeight: 600, fontSize: 14, cursor: 'pointer', opacity: (!schedForm.staffId || (!schedForm.wantsLeverans && !schedForm.wantsHamtning)) ? 0.5 : 1 }}>
                 Spara pass
               </button>
             </div>
