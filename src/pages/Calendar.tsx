@@ -1,18 +1,16 @@
 import { useState } from 'react';
 import { useOrders } from '../hooks/useOrders';
-import { useReminders } from '../hooks/useReminders';
 import { useStaff } from '../hooks/useStaff';
 import { useAppContext } from '../context/AppContext';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, startOfWeek, endOfWeek, isSameMonth, isToday, isSameDay, parseISO, addMonths, subMonths } from 'date-fns';
 import { sv } from 'date-fns/locale';
-import { ChevronLeft, ChevronRight, Truck, Package, Star, FileText, Bell } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Truck, Package, Star, FileText } from 'lucide-react';
 import type { Order, StaffMember, StaffSchedule } from '../types';
 import { generateAndPrint } from '../components/PdfGenerator/generateHtml';
 import { resolveDisplayName } from '../utils/legacyProductMapping';
 
 export default function Calendar() {
   const { orders, isLoading, fetchError } = useOrders();
-  const { reminders } = useReminders();
   const { staff, schedules } = useStaff();
   const { region } = useAppContext();
   const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -26,9 +24,6 @@ export default function Calendar() {
   const calStart   = startOfWeek(monthStart, { weekStartsOn: 1 });
   const calEnd     = endOfWeek(monthEnd,     { weekStartsOn: 1 });
   const days       = eachDayOfInterval({ start: calStart, end: calEnd });
-
-  const getRemindersForDay = (day: Date) =>
-    reminders.filter(r => r.status === 'aktiv' && r.reminderDate === format(day, 'yyyy-MM-dd'));
 
   const getEventsForDay = (day: Date) => {
     const deliveries      = filtered.filter(o => o.deliveryDate && isSameDay(parseISO(o.deliveryDate), day) && !o.selfPickup);
@@ -114,10 +109,6 @@ export default function Calendar() {
           <div className="w-3 h-3 rounded-full" style={{ background: '#9ca3af' }} />
           <span>Kund återlämning</span>
         </div>
-        <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded-full" style={{ background: '#ef4444' }} />
-          <span>Påminnelse</span>
-        </div>
       </div>
 
       <div className={`grid gap-5 ${selectedDay ? 'grid-cols-1 lg:grid-cols-[1fr_300px]' : 'grid-cols-1'}`}>
@@ -134,10 +125,9 @@ export default function Calendar() {
             <div className="grid grid-cols-7">
               {days.map(day => {
                 const { deliveries, pickups, events, selfDeliveries, selfReturns } = getEventsForDay(day);
-                const dayReminders = getRemindersForDay(day);
-                const total     = deliveries.length + pickups.length + events.length + selfDeliveries.length + selfReturns.length + dayReminders.length;
+                const total     = deliveries.length + pickups.length + events.length + selfDeliveries.length + selfReturns.length;
                 // Count how many chips are actually rendered (1 per non-empty category)
-                const shownChips = (deliveries.length > 0 ? 1 : 0) + (pickups.length > 0 ? 1 : 0) + (events.length > 0 ? 1 : 0) + (selfDeliveries.length > 0 ? 1 : 0) + (selfReturns.length > 0 ? 1 : 0) + (dayReminders.length > 0 ? 1 : 0);
+                const shownChips = (deliveries.length > 0 ? 1 : 0) + (pickups.length > 0 ? 1 : 0) + (events.length > 0 ? 1 : 0) + (selfDeliveries.length > 0 ? 1 : 0) + (selfReturns.length > 0 ? 1 : 0);
                 const overflow  = total - shownChips;
                 const inMonth = isSameMonth(day, currentMonth);
                 const today   = isToday(day);
@@ -186,12 +176,6 @@ export default function Calendar() {
                           {o.lastName}
                         </div>
                       ))}
-                      {dayReminders.slice(0, 1).map(r => (
-                        <div key={r.id} className="text-[10px] rounded px-1 py-0.5 truncate flex items-center gap-1" style={{ background: '#fee2e2', color: '#dc2626' }}>
-                          <Bell size={8} className="flex-shrink-0" />
-                          {r.title}
-                        </div>
-                      ))}
                       {overflow > 0 && (
                         <div className="text-[10px] text-gray-400">+{overflow} fler</div>
                       )}
@@ -205,7 +189,6 @@ export default function Calendar() {
 
         {/* Side panel */}
         {selectedDay && selectedEvents && (() => {
-          const dayReminders = getRemindersForDay(selectedDay);
           return (
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 self-start">
             <h3 className="font-semibold text-[#2d7a3a] mb-4">
@@ -215,8 +198,7 @@ export default function Calendar() {
              selectedEvents.pickups.length    === 0 &&
              selectedEvents.events.length     === 0 &&
              selectedEvents.selfDeliveries.length === 0 &&
-             selectedEvents.selfReturns.length    === 0 &&
-             dayReminders.length === 0 ? (
+             selectedEvents.selfReturns.length    === 0 ? (
               <p className="text-sm text-gray-400">Inga aktiviteter</p>
             ) : (
               <div className="space-y-4">
@@ -258,23 +240,6 @@ export default function Calendar() {
                       <Package size={12} /> Kund återlämning
                     </h4>
                     {selectedEvents.selfReturns.map(o => <OrderCard key={o.id} order={o} daySchedules={schedules} staff={staff} />)}
-                  </div>
-                )}
-                {dayReminders.length > 0 && (
-                  <div>
-                    <h4 className="text-xs font-semibold uppercase tracking-wider mb-2 flex items-center gap-1.5" style={{ color: '#dc2626' }}>
-                      <Bell size={12} /> Påminnelser
-                    </h4>
-                    {dayReminders.map(r => {
-                      const linked = orders.find(o => o.id === r.orderId);
-                      return (
-                        <div key={r.id} style={{ background: '#fee2e2', borderRadius: 8, padding: '10px 12px', marginBottom: 6 }}>
-                          <p style={{ fontWeight: 600, fontSize: 13, color: '#991b1b' }}>{r.title}</p>
-                          {r.description && <p style={{ fontSize: 12, color: '#dc2626', marginTop: 2 }}>{r.description}</p>}
-                          {linked && <p style={{ fontSize: 11, color: '#b91c1c', marginTop: 4 }}>{linked.firstName} {linked.lastName} – {linked.eventDate}</p>}
-                        </div>
-                      );
-                    })}
                   </div>
                 )}
               </div>

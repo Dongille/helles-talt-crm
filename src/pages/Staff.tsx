@@ -2,8 +2,9 @@ import { useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { useStaff } from '../hooks/useStaff';
 import { useOrders } from '../hooks/useOrders';
-import type { StaffMember, StaffSchedule } from '../types';
-import { Users, Plus, Pencil, Trash2, X, CalendarDays } from 'lucide-react';
+import { useTimeLog } from '../hooks/useTimeLog';
+import type { StaffMember, StaffSchedule, TimeLog } from '../types';
+import { Users, Plus, Pencil, Trash2, X, CalendarDays, Clock } from 'lucide-react';
 
 const accent = '#2d7a3a';
 
@@ -12,9 +13,14 @@ const EMPTY_SCHED: Omit<StaffSchedule, 'id' | 'createdAt'> & { wantsLeverans: bo
   staffId: '', orderId: undefined, scheduleDate: '', assignmentType: 'leverans', wantsLeverans: true, wantsHamtning: false, role: '', notes: '',
 };
 
+const EMPTY_LOG: Omit<TimeLog, 'id' | 'createdAt'> = {
+  staffId: '', orderId: undefined, logDate: '', hours: 0, notes: '',
+};
+
 export default function Staff() {
   const { staff, schedules, addMember, updateMember, deleteMember, addSchedule, deleteSchedule } = useStaff();
   const { orders } = useOrders();
+  const { logs, addLog, updateLog, deleteLog } = useTimeLog();
 
   const [showMemberForm, setShowMemberForm] = useState(false);
   const [editingMember, setEditingMember]   = useState<StaffMember | null>(null);
@@ -22,6 +28,10 @@ export default function Staff() {
 
   const [showSchedForm, setShowSchedForm] = useState<boolean>(false);
   const [schedForm, setSchedForm]         = useState<typeof EMPTY_SCHED>(EMPTY_SCHED);
+
+  const [showLogForm, setShowLogForm] = useState(false);
+  const [editingLog, setEditingLog]   = useState<TimeLog | null>(null);
+  const [logForm, setLogForm]         = useState<typeof EMPTY_LOG>(EMPTY_LOG);
 
   const activeBookings = orders.filter(o => o.status === 'bokning').sort((a, b) => (a.eventDate ?? '').localeCompare(b.eventDate ?? ''));
 
@@ -68,6 +78,28 @@ export default function Staff() {
       if (date) addSchedule({ id: uuidv4(), staffId: schedForm.staffId, orderId: schedForm.orderId || undefined, scheduleDate: date, assignmentType: 'hämtning', role: schedForm.role || undefined, notes: schedForm.notes || undefined, createdAt: now });
     }
     setShowSchedForm(false);
+  };
+
+  const openAddLog = () => {
+    setEditingLog(null);
+    setLogForm({ ...EMPTY_LOG, staffId: staff[0]?.id ?? '' });
+    setShowLogForm(true);
+  };
+
+  const openEditLog = (l: TimeLog) => {
+    setEditingLog(l);
+    setLogForm({ staffId: l.staffId, orderId: l.orderId, logDate: l.logDate, hours: l.hours, notes: l.notes ?? '' });
+    setShowLogForm(true);
+  };
+
+  const saveLog = () => {
+    if (!logForm.staffId || !logForm.logDate || !logForm.hours) return;
+    if (editingLog) {
+      updateLog(editingLog.id, { ...logForm, notes: logForm.notes || undefined, orderId: logForm.orderId || undefined });
+    } else {
+      addLog({ ...logForm, id: uuidv4(), createdAt: new Date().toISOString(), notes: logForm.notes || undefined, orderId: logForm.orderId || undefined });
+    }
+    setShowLogForm(false);
   };
 
   const staffName = (id: string) => staff.find(s => s.id === id)?.name ?? id;
@@ -172,6 +204,114 @@ export default function Staff() {
           </div>
         )}
       </section>
+
+      {/* Section C: Time log */}
+      <section>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+          <h3 style={{ fontWeight: 700, fontSize: 15, display: 'flex', alignItems: 'center', gap: 8 }}>
+            <Clock size={16} color={accent} /> Tidslogg
+          </h3>
+          <button onClick={openAddLog} style={{ background: 'white', color: accent, border: `1px solid ${accent}`, borderRadius: 8, padding: '8px 14px', fontWeight: 600, fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5 }}>
+            <Plus size={13} /> Logga tid
+          </button>
+        </div>
+
+        {logs.length === 0 ? (
+          <div style={{ background: 'white', border: '1px solid #e5e5e5', borderRadius: 12, padding: '32px 20px', textAlign: 'center', color: '#aaa' }}>
+            <Clock size={28} style={{ margin: '0 auto 8px', opacity: 0.3 }} />
+            <p style={{ fontSize: 14 }}>Ingen tid loggad ännu</p>
+          </div>
+        ) : (
+          <>
+            <div style={{ display: 'grid', gap: 8 }}>
+              {logs.map(l => (
+                <div key={l.id} style={{ background: 'white', border: '1px solid #e5e5e5', borderRadius: 12, padding: '12px 16px', display: 'flex', gap: 12, alignItems: 'center' }}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' }}>
+                      <span style={{ fontWeight: 600, fontSize: 14 }}>{staffName(l.staffId)}</span>
+                      <span style={{ fontSize: 12, color: '#6b7280' }}>{l.logDate}</span>
+                      <span style={{ fontSize: 12, fontWeight: 600, color: accent }}>{l.hours} h</span>
+                    </div>
+                    {l.orderId && <p style={{ fontSize: 12, color: '#6b7280', marginTop: 3 }}>{orderLabel(l.orderId)}</p>}
+                    {l.notes && <p style={{ fontSize: 12, color: '#9ca3af', marginTop: 2 }}>{l.notes}</p>}
+                  </div>
+                  <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
+                    <button onClick={() => openEditLog(l)} title="Redigera" style={{ border: 'none', background: 'none', cursor: 'pointer', padding: 4, color: '#6b7280', borderRadius: 6 }}>
+                      <Pencil size={14} />
+                    </button>
+                    <button onClick={() => { if (window.confirm('Ta bort tidsloggning?')) deleteLog(l.id); }} title="Ta bort" style={{ border: 'none', background: 'none', cursor: 'pointer', padding: 4, color: '#ef4444', borderRadius: 6 }}>
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Totals per person */}
+            <div style={{ marginTop: 16, background: '#f9fafb', border: '1px solid #e5e5e5', borderRadius: 12, padding: '14px 16px' }}>
+              <p style={{ fontWeight: 700, fontSize: 13, marginBottom: 10, color: '#374151' }}>Totalt per person</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                {staff.map(m => {
+                  const total = logs.filter(l => l.staffId === m.id).reduce((s, l) => s + l.hours, 0);
+                  if (total === 0) return null;
+                  return (
+                    <div key={m.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontSize: 13, color: '#374151' }}>{m.name}</span>
+                      <span style={{ fontSize: 13, fontWeight: 600, color: accent }}>{total} h</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </>
+        )}
+      </section>
+
+      {/* Time log form modal */}
+      {showLogForm && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.35)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+          <div style={{ background: 'white', borderRadius: 16, padding: 28, width: '100%', maxWidth: 440, maxHeight: '90vh', overflowY: 'auto' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+              <h3 style={{ fontWeight: 700, fontSize: 16 }}>{editingLog ? 'Redigera tidsloggning' : 'Logga tid'}</h3>
+              <button onClick={() => setShowLogForm(false)} style={{ border: 'none', background: 'none', cursor: 'pointer', color: '#6b7280', padding: 4 }}><X size={18} /></button>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <div>
+                <label style={{ fontSize: 13, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 4 }}>Person *</label>
+                <select value={logForm.staffId} onChange={e => setLogForm(f => ({ ...f, staffId: e.target.value }))} style={{ width: '100%', border: '1px solid #e5e5e5', borderRadius: 8, padding: '8px 12px', fontSize: 14, outline: 'none', background: 'white', boxSizing: 'border-box' }}>
+                  <option value="">Välj person</option>
+                  {staff.map(m => <option key={m.id} value={m.id}>{m.name}{m.role ? ` – ${m.role}` : ''}</option>)}
+                </select>
+              </div>
+              <div>
+                <label style={{ fontSize: 13, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 4 }}>Kopplad bokning (valfri)</label>
+                <select value={logForm.orderId ?? ''} onChange={e => setLogForm(f => ({ ...f, orderId: e.target.value || undefined }))} style={{ width: '100%', border: '1px solid #e5e5e5', borderRadius: 8, padding: '8px 12px', fontSize: 14, outline: 'none', background: 'white', boxSizing: 'border-box' }}>
+                  <option value="">Ingen koppling</option>
+                  {activeBookings.map(o => <option key={o.id} value={o.id}>{o.firstName} {o.lastName} – {o.eventDate}</option>)}
+                </select>
+              </div>
+              <div>
+                <label style={{ fontSize: 13, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 4 }}>Datum *</label>
+                <input type="date" value={logForm.logDate} onChange={e => setLogForm(f => ({ ...f, logDate: e.target.value }))} style={{ width: '100%', border: '1px solid #e5e5e5', borderRadius: 8, padding: '8px 12px', fontSize: 14, outline: 'none', boxSizing: 'border-box' }} />
+              </div>
+              <div>
+                <label style={{ fontSize: 13, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 4 }}>Antal timmar *</label>
+                <input type="number" min="0.5" step="0.5" value={logForm.hours || ''} onChange={e => setLogForm(f => ({ ...f, hours: parseFloat(e.target.value) || 0 }))} placeholder="T.ex. 4" style={{ width: '100%', border: '1px solid #e5e5e5', borderRadius: 8, padding: '8px 12px', fontSize: 14, outline: 'none', boxSizing: 'border-box' }} />
+              </div>
+              <div>
+                <label style={{ fontSize: 13, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 4 }}>Anteckningar</label>
+                <textarea value={logForm.notes ?? ''} onChange={e => setLogForm(f => ({ ...f, notes: e.target.value }))} rows={2} style={{ width: '100%', border: '1px solid #e5e5e5', borderRadius: 8, padding: '8px 12px', fontSize: 14, outline: 'none', resize: 'vertical', boxSizing: 'border-box' }} />
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: 10, marginTop: 20 }}>
+              <button onClick={() => setShowLogForm(false)} style={{ flex: 1, padding: '10px 0', border: '1px solid #e5e5e5', borderRadius: 8, background: 'white', fontWeight: 600, fontSize: 14, cursor: 'pointer', color: '#555' }}>Avbryt</button>
+              <button onClick={saveLog} disabled={!logForm.staffId || !logForm.logDate || !logForm.hours} style={{ flex: 2, padding: '10px 0', border: 'none', borderRadius: 8, background: accent, color: 'white', fontWeight: 600, fontSize: 14, cursor: 'pointer', opacity: (!logForm.staffId || !logForm.logDate || !logForm.hours) ? 0.5 : 1 }}>
+                {editingLog ? 'Spara ändringar' : 'Logga tid'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Member form modal */}
       {showMemberForm && (

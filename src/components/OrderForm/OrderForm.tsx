@@ -352,7 +352,23 @@ export default function OrderForm({ order, initialStatus, lockedStatus, onSave, 
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-4">
               <div>
                 <label className="text-xs font-medium text-gray-600 mb-1 block">Eventdatum *</label>
-                <input type="date" className={inputCls('eventDate')} value={form.eventDate} onChange={e => set('eventDate', e.target.value)} />
+                <input type="date" className={inputCls('eventDate')} value={form.eventDate} onChange={e => {
+                  const val = e.target.value;
+                  setForm(prev => {
+                    const next: typeof prev = { ...prev, eventDate: val };
+                    if (val) {
+                      if (!prev.deliveryDate) {
+                        const d = new Date(val); d.setDate(d.getDate() - 1);
+                        next.deliveryDate = d.toISOString().slice(0, 10);
+                      }
+                      if (!prev.pickupDate) {
+                        const d = new Date(val); d.setDate(d.getDate() + 1);
+                        next.pickupDate = d.toISOString().slice(0, 10);
+                      }
+                    }
+                    return next;
+                  });
+                }} />
                 {errors.eventDate && <p className="text-xs text-red-500 mt-1">{errors.eventDate}</p>}
               </div>
               <div>

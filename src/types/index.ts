@@ -89,3 +89,13 @@ export interface StaffSchedule {
   notes?: string;
   createdAt: string;
 }
+
+export interface TimeLog {
+  id: string;
+  staffId: string;
+  orderId?: string;
+  logDate: string;
+  hours: number;
+  notes?: string;
+  createdAt: string;
+}
