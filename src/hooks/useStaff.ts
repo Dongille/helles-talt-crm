@@ -16,13 +16,14 @@ function memberFromRow(row: Record<string, unknown>): StaffMember {
 
 function scheduleFromRow(row: Record<string, unknown>): StaffSchedule {
   return {
-    id:           String(row.id),
-    staffId:      String(row.staff_id),
-    orderId:      row.order_id ? String(row.order_id) : undefined,
-    scheduleDate: String(row.schedule_date ?? ''),
-    role:         row.role  ? String(row.role)  : undefined,
-    notes:        row.notes ? String(row.notes) : undefined,
-    createdAt:    String(row.created_at),
+    id:             String(row.id),
+    staffId:        String(row.staff_id),
+    orderId:        row.order_id ? String(row.order_id) : undefined,
+    scheduleDate:   String(row.schedule_date ?? ''),
+    assignmentType: (row.assignment_type as StaffSchedule['assignmentType']) ?? 'leverans',
+    role:           row.role  ? String(row.role)  : undefined,
+    notes:          row.notes ? String(row.notes) : undefined,
+    createdAt:      String(row.created_at),
   };
 }
 
@@ -96,7 +97,7 @@ export function useStaff() {
 
   const addSchedule = (s: StaffSchedule) => {
     setSchedules(prev => [...prev, s]);
-    supabase.from('staff_schedule').insert({ id: s.id, staff_id: s.staffId, order_id: s.orderId ?? null, schedule_date: s.scheduleDate, role: s.role ?? null, notes: s.notes ?? null, created_at: s.createdAt }).then(({ error }) => {
+    supabase.from('staff_schedule').insert({ id: s.id, staff_id: s.staffId, order_id: s.orderId ?? null, schedule_date: s.scheduleDate, assignment_type: s.assignmentType ?? 'leverans', role: s.role ?? null, notes: s.notes ?? null, created_at: s.createdAt }).then(({ error }) => {
       if (error) console.error('addSchedule error', error);
     });
   };

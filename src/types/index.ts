@@ -84,6 +84,7 @@ export interface StaffSchedule {
   staffId: string;
   orderId?: string;
   scheduleDate: string;
+  assignmentType?: 'leverans' | 'hämtning';
   role?: string;
   notes?: string;
   createdAt: string;

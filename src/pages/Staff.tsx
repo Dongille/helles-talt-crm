@@ -7,8 +7,12 @@ import { Users, Plus, Pencil, Trash2, X, CalendarDays } from 'lucide-react';
 
 const accent = '#2d7a3a';
 
+type AssignmentChoice = 'leverans' | 'hämtning' | 'båda';
+
 const EMPTY_MEMBER: Omit<StaffMember, 'id' | 'createdAt'> = { name: '', role: '', phone: '', email: '', notes: '' };
-const EMPTY_SCHED: Omit<StaffSchedule, 'id' | 'createdAt'> = { staffId: '', orderId: undefined, scheduleDate: '', role: '', notes: '' };
+const EMPTY_SCHED: Omit<StaffSchedule, 'id' | 'createdAt'> & { assignmentChoice: AssignmentChoice } = {
+  staffId: '', orderId: undefined, scheduleDate: '', assignmentType: 'leverans', assignmentChoice: 'leverans', role: '', notes: '',
+};
 
 export default function Staff() {
   const { staff, schedules, addMember, updateMember, deleteMember, addSchedule, deleteSchedule } = useStaff();
@@ -19,7 +23,7 @@ export default function Staff() {
   const [memberForm, setMemberForm]         = useState(EMPTY_MEMBER);
 
   const [showSchedForm, setShowSchedForm] = useState(false);
-  const [schedForm, setSchedForm]         = useState(EMPTY_SCHED);
+  const [schedForm, setSchedForm]         = useState<typeof EMPTY_SCHED>(EMPTY_SCHED);
 
   const activeBookings = orders.filter(o => o.status === 'bokning');
 
@@ -40,15 +44,43 @@ export default function Staff() {
     setShowMemberForm(false);
   };
 
-  const openAddSched = (staffId?: string, orderId?: string, date?: string) => {
+  const openAddSched = (staffId?: string, orderId?: string) => {
     const order = orderId ? orders.find(o => o.id === orderId) : undefined;
-    setSchedForm({ staffId: staffId ?? (staff[0]?.id ?? ''), orderId: orderId, scheduleDate: date ?? order?.deliveryDate ?? '', role: '', notes: '' });
+    setSchedForm({ ...EMPTY_SCHED, staffId: staffId ?? (staff[0]?.id ?? ''), orderId, scheduleDate: order?.deliveryDate ?? '', assignmentChoice: 'leverans', assignmentType: 'leverans' });
     setShowSchedForm(true);
   };
 
+  const handleAssignmentChange = (choice: AssignmentChoice) => {
+    const order = orders.find(o => o.id === schedForm.orderId);
+    let date = schedForm.scheduleDate;
+    if (choice === 'leverans' && order?.deliveryDate) date = order.deliveryDate;
+    if (choice === 'hämtning' && order?.pickupDate) date = order.pickupDate;
+    if (choice === 'båda' && order?.deliveryDate) date = order.deliveryDate;
+    setSchedForm(f => ({ ...f, assignmentChoice: choice, assignmentType: choice === 'hämtning' ? 'hämtning' : 'leverans', scheduleDate: date }));
+  };
+
+  const handleOrderChange = (oid: string | undefined) => {
+    const o = oid ? orders.find(ord => ord.id === oid) : undefined;
+    let date = schedForm.scheduleDate;
+    if (o) {
+      if (schedForm.assignmentChoice === 'hämtning' && o.pickupDate) date = o.pickupDate;
+      else if (o.deliveryDate) date = o.deliveryDate;
+    }
+    setSchedForm(f => ({ ...f, orderId: oid, scheduleDate: date }));
+  };
+
   const saveSched = () => {
-    if (!schedForm.staffId || !schedForm.scheduleDate) return;
-    addSchedule({ ...schedForm, id: uuidv4(), createdAt: new Date().toISOString(), orderId: schedForm.orderId || undefined, role: schedForm.role || undefined, notes: schedForm.notes || undefined });
+    if (!schedForm.staffId) return;
+    const now = new Date().toISOString();
+    const order = orders.find(o => o.id === schedForm.orderId);
+    if (schedForm.assignmentChoice === 'båda' && order?.deliveryDate && order?.pickupDate) {
+      // Create two separate schedules
+      addSchedule({ id: uuidv4(), staffId: schedForm.staffId, orderId: schedForm.orderId || undefined, scheduleDate: order.deliveryDate, assignmentType: 'leverans', role: schedForm.role || undefined, notes: schedForm.notes || undefined, createdAt: now });
+      addSchedule({ id: uuidv4(), staffId: schedForm.staffId, orderId: schedForm.orderId || undefined, scheduleDate: order.pickupDate, assignmentType: 'hämtning', role: schedForm.role || undefined, notes: schedForm.notes || undefined, createdAt: now });
+    } else {
+      if (!schedForm.scheduleDate) return;
+      addSchedule({ id: uuidv4(), staffId: schedForm.staffId, orderId: schedForm.orderId || undefined, scheduleDate: schedForm.scheduleDate, assignmentType: schedForm.assignmentType ?? 'leverans', role: schedForm.role || undefined, notes: schedForm.notes || undefined, createdAt: now });
+    }
     setShowSchedForm(false);
   };
 
@@ -100,7 +132,7 @@ export default function Staff() {
                   {m.notes && <p style={{ fontSize: 12, color: '#9ca3af', marginTop: 4 }}>{m.notes}</p>}
                 </div>
                 <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
-                  <button onClick={() => openAddSched(m.id)} title="Schemalägg" style={{ border: 'none', background: 'none', cursor: 'pointer', padding: 4, color: accent, borderRadius: 6 }}>
+                  <button onClick={() => openAddSched(m.id, undefined)} title="Schemalägg" style={{ border: 'none', background: 'none', cursor: 'pointer', padding: 4, color: accent, borderRadius: 6 }}>
                     <CalendarDays size={14} />
                   </button>
                   <button onClick={() => openEditMember(m)} title="Redigera" style={{ border: 'none', background: 'none', cursor: 'pointer', padding: 4, color: '#6b7280', borderRadius: 6 }}>
@@ -122,7 +154,7 @@ export default function Staff() {
           <h3 style={{ fontWeight: 700, fontSize: 15, display: 'flex', alignItems: 'center', gap: 8 }}>
             <CalendarDays size={16} color={accent} /> Schemaläggning
           </h3>
-          <button onClick={() => openAddSched()} style={{ background: 'white', color: accent, border: `1px solid ${accent}`, borderRadius: 8, padding: '8px 14px', fontWeight: 600, fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5 }}>
+          <button onClick={() => openAddSched(undefined, undefined)} style={{ background: 'white', color: accent, border: `1px solid ${accent}`, borderRadius: 8, padding: '8px 14px', fontWeight: 600, fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5 }}>
             <Plus size={13} /> Nytt pass
           </button>
         </div>
@@ -138,8 +170,10 @@ export default function Staff() {
               <div key={s.id} style={{ background: 'white', border: '1px solid #e5e5e5', borderRadius: 12, padding: '12px 16px', display: 'flex', gap: 12, alignItems: 'center' }}>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' }}>
+                    <span style={{ fontSize: 13 }}>{s.assignmentType === 'hämtning' ? '📦' : '🚚'}</span>
                     <span style={{ fontWeight: 600, fontSize: 14 }}>{staffName(s.staffId)}</span>
                     <span style={{ fontSize: 12, color: '#6b7280' }}>{s.scheduleDate}</span>
+                    <span style={{ fontSize: 11, color: s.assignmentType === 'hämtning' ? '#ea580c' : '#16a34a', fontWeight: 600 }}>{s.assignmentType === 'hämtning' ? 'Hämtning' : 'Leverans'}</span>
                     {s.role && <span style={{ fontSize: 12, color: '#9ca3af' }}>{s.role}</span>}
                   </div>
                   {s.orderId && <p style={{ fontSize: 12, color: '#6b7280', marginTop: 3 }}>🔗 {orderLabel(s.orderId)}</p>}
@@ -207,19 +241,30 @@ export default function Staff() {
               </div>
               <div>
                 <label style={{ fontSize: 13, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 4 }}>Kopplad bokning (valfri)</label>
-                <select value={schedForm.orderId ?? ''} onChange={e => {
-                  const oid = e.target.value || undefined;
-                  const o = oid ? orders.find(o => o.id === oid) : undefined;
-                  setSchedForm(f => ({ ...f, orderId: oid, scheduleDate: o?.deliveryDate ?? f.scheduleDate }));
-                }} style={{ width: '100%', border: '1px solid #e5e5e5', borderRadius: 8, padding: '8px 12px', fontSize: 14, outline: 'none', background: 'white', boxSizing: 'border-box' }}>
+                <select value={schedForm.orderId ?? ''} onChange={e => handleOrderChange(e.target.value || undefined)} style={{ width: '100%', border: '1px solid #e5e5e5', borderRadius: 8, padding: '8px 12px', fontSize: 14, outline: 'none', background: 'white', boxSizing: 'border-box' }}>
                   <option value="">Ingen koppling</option>
                   {activeBookings.map(o => <option key={o.id} value={o.id}>{o.firstName} {o.lastName} – {o.eventDate}</option>)}
                 </select>
               </div>
               <div>
+                <label style={{ fontSize: 13, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 4 }}>Uppdragstyp *</label>
+                <div style={{ display: 'flex', gap: 6 }}>
+                  {(['leverans', 'hämtning', 'båda'] as const).map(c => (
+                    <button key={c} type="button" onClick={() => handleAssignmentChange(c)} style={{ flex: 1, padding: '8px 6px', border: `1px solid ${schedForm.assignmentChoice === c ? accent : '#e5e5e5'}`, borderRadius: 8, background: schedForm.assignmentChoice === c ? accent : 'white', color: schedForm.assignmentChoice === c ? 'white' : '#374151', fontWeight: 600, fontSize: 13, cursor: 'pointer', textTransform: 'capitalize' }}>
+                      {c === 'leverans' ? '🚚 Leverans' : c === 'hämtning' ? '📦 Hämtning' : '↔ Båda'}
+                    </button>
+                  ))}
+                </div>
+                {schedForm.assignmentChoice === 'båda' && (
+                  <p style={{ fontSize: 11, color: '#6b7280', marginTop: 6 }}>Skapar automatiskt ett pass för leverans och ett för hämtning.</p>
+                )}
+              </div>
+              {schedForm.assignmentChoice !== 'båda' && (
+              <div>
                 <label style={{ fontSize: 13, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 4 }}>Datum *</label>
                 <input type="date" value={schedForm.scheduleDate} onChange={e => setSchedForm(f => ({ ...f, scheduleDate: e.target.value }))} style={{ width: '100%', border: '1px solid #e5e5e5', borderRadius: 8, padding: '8px 12px', fontSize: 14, outline: 'none', boxSizing: 'border-box' }} />
               </div>
+              )}
               <div>
                 <label style={{ fontSize: 13, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 4 }}>Roll för detta tillfälle</label>
                 <input value={schedForm.role ?? ''} onChange={e => setSchedForm(f => ({ ...f, role: e.target.value }))} placeholder="T.ex. Montör" style={{ width: '100%', border: '1px solid #e5e5e5', borderRadius: 8, padding: '8px 12px', fontSize: 14, outline: 'none', boxSizing: 'border-box' }} />
@@ -231,7 +276,7 @@ export default function Staff() {
             </div>
             <div style={{ display: 'flex', gap: 10, marginTop: 20 }}>
               <button onClick={() => setShowSchedForm(false)} style={{ flex: 1, padding: '10px 0', border: '1px solid #e5e5e5', borderRadius: 8, background: 'white', fontWeight: 600, fontSize: 14, cursor: 'pointer', color: '#555' }}>Avbryt</button>
-              <button onClick={saveSched} disabled={!schedForm.staffId || !schedForm.scheduleDate} style={{ flex: 2, padding: '10px 0', border: 'none', borderRadius: 8, background: accent, color: 'white', fontWeight: 600, fontSize: 14, cursor: 'pointer', opacity: (!schedForm.staffId || !schedForm.scheduleDate) ? 0.5 : 1 }}>
+              <button onClick={saveSched} disabled={!schedForm.staffId || (schedForm.assignmentChoice !== 'båda' && !schedForm.scheduleDate)} style={{ flex: 2, padding: '10px 0', border: 'none', borderRadius: 8, background: accent, color: 'white', fontWeight: 600, fontSize: 14, cursor: 'pointer', opacity: (!schedForm.staffId || (schedForm.assignmentChoice !== 'båda' && !schedForm.scheduleDate)) ? 0.5 : 1 }}>
                 Spara pass
               </button>
             </div>
