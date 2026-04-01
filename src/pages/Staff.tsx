@@ -23,7 +23,7 @@ export default function Staff() {
   const [showSchedForm, setShowSchedForm] = useState<boolean>(false);
   const [schedForm, setSchedForm]         = useState<typeof EMPTY_SCHED>(EMPTY_SCHED);
 
-  const activeBookings = orders.filter(o => o.status === 'bokning');
+  const activeBookings = orders.filter(o => o.status === 'bokning').sort((a, b) => (a.eventDate ?? '').localeCompare(b.eventDate ?? ''));
 
   const openAddMember = () => { setEditingMember(null); setMemberForm(EMPTY_MEMBER); setShowMemberForm(true); };
   const openEditMember = (m: StaffMember) => {

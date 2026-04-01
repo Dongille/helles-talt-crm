@@ -22,7 +22,7 @@ export default function Reminders() {
   const [editing, setEditing] = useState<Reminder | null>(null);
   const [form, setForm] = useState(EMPTY);
 
-  const activeBookings = orders.filter(o => o.status === 'bokning');
+  const activeBookings = orders.filter(o => o.status === 'bokning').sort((a, b) => (a.eventDate ?? '').localeCompare(b.eventDate ?? ''));
 
   const openAdd = () => {
     setEditing(null);
