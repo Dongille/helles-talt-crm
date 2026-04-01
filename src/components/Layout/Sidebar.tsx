@@ -2,7 +2,7 @@ import { NavLink } from 'react-router-dom';
 import { useAppContext } from '../../context/AppContext';
 import { useAuth } from '../../context/AuthContext';
 import type { Region } from '../../types';
-import { LayoutDashboard, Calendar, Package, FileText, CalendarCheck, BookOpen, BarChart2, Archive, Receipt, X, LogOut } from 'lucide-react';
+import { LayoutDashboard, Calendar, Package, FileText, CalendarCheck, BookOpen, BarChart2, Archive, Receipt, Bell, Users, X, LogOut } from 'lucide-react';
 
 const regions: Region[] = ['Alla', 'Göteborg', 'Skaraborg'];
 
@@ -12,10 +12,12 @@ const navItems = [
   { to: '/bokningar', label: 'Bokningar', icon: CalendarCheck, end: false },
   { to: '/kalender', label: 'Kalender', icon: Calendar, end: false },
   { to: '/inventering', label: 'Inventering', icon: Package, end: false },
-  { to: '/loggbok',     label: 'Loggbok',     icon: BookOpen,  end: false },
-  { to: '/statistik',   label: 'Statistik',   icon: BarChart2, end: false },
-  { to: '/arkiv',       label: 'Arkiv',       icon: Archive,   end: false },
-  { to: '/fakturering', label: 'Fakturering', icon: Receipt,   end: false },
+  { to: '/loggbok',       label: 'Loggbok',       icon: BookOpen,  end: false },
+  { to: '/påminnelser',   label: 'Påminnelser',   icon: Bell,      end: false },
+  { to: '/statistik',     label: 'Statistik',     icon: BarChart2, end: false },
+  { to: '/arkiv',         label: 'Arkiv',         icon: Archive,   end: false },
+  { to: '/fakturering',   label: 'Fakturering',   icon: Receipt,   end: false },
+  { to: '/personal',      label: 'Personal',      icon: Users,     end: false },
 ];
 
 interface SidebarProps {

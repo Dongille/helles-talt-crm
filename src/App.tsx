@@ -11,6 +11,8 @@ import Logbook   from './pages/Logbook'
 import Statistics from './pages/Statistics'
 import Archive   from './pages/Archive'
 import Invoicing from './pages/Invoicing'
+import Reminders from './pages/Reminders'
+import Staff     from './pages/Staff'
 
 // Redirects to /login if not authenticated; shows a spinner while checking
 function AuthGuard() {
@@ -57,6 +59,8 @@ function App() {
           <Route path="/statistik"     element={<Statistics />} />
           <Route path="/arkiv"         element={<Archive />} />
           <Route path="/fakturering"   element={<Invoicing />} />
+          <Route path="/påminnelser"   element={<Reminders />} />
+          <Route path="/personal"      element={<Staff />} />
         </Route>
       </Route>
     </Routes>

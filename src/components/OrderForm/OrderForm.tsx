@@ -3,7 +3,8 @@ import { v4 as uuidv4 } from 'uuid';
 import type { Order, OrderItem } from '../../types';
 import { PRODUCTS } from '../../data/products';
 import { calculateOrder, formatSEK } from '../../utils/calculations';
-import { X, Plus, Minus } from 'lucide-react';
+import { useReminders } from '../../hooks/useReminders';
+import { X, Plus, Minus, Bell } from 'lucide-react';
 
 const TABS = ['Paketerbjudande', 'Partytält', 'Möbler', 'Festutrustning', 'Anpassa'] as const;
 type Tab = typeof TABS[number];
@@ -107,6 +108,10 @@ export default function OrderForm({ order, initialStatus, lockedStatus, onSave, 
     order ? { ...order } : { ...emptyOrder, ...(initialStatus ? { status: initialStatus } : {}) }
   );
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [addReminderChecked, setAddReminderChecked] = useState(false);
+  const [reminderTitle, setReminderTitle]   = useState('');
+  const [reminderDate,  setReminderDate]    = useState('');
+  const { addReminder } = useReminders();
   const [activeTab, setActiveTab] = useState<Tab>('Paketerbjudande');
   const [activeSubcat, setActiveSubcat] = useState<Record<string, string>>({
     Paketerbjudande: 'Enkelt paket',
@@ -212,6 +217,10 @@ export default function OrderForm({ order, initialStatus, lockedStatus, onSave, 
       confirmationPdfGenerated: saveAsStatus === 'bokning' ? true : form.confirmationPdfGenerated,
     };
     onSave(saved);
+    // Optionally create linked reminder
+    if (addReminderChecked && reminderTitle.trim() && reminderDate) {
+      addReminder({ id: uuidv4(), title: reminderTitle.trim(), reminderDate, orderId: saved.id, status: 'aktiv', createdAt: new Date().toISOString() });
+    }
   };
 
   const calc = calculateOrder(form);
@@ -682,6 +691,30 @@ export default function OrderForm({ order, initialStatus, lockedStatus, onSave, 
               placeholder="Skriv noteringar..."
               className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#2d7a3a] resize-none"
             />
+          </section>
+
+          {/* Påminnelse-sektion (valfri) */}
+          <section className="bg-white rounded-xl shadow-sm overflow-hidden">
+            <div className="px-5 py-4">
+              <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
+                <input type="checkbox" checked={addReminderChecked} onChange={e => setAddReminderChecked(e.target.checked)} style={{ width: 16, height: 16, cursor: 'pointer' }} />
+                <span style={{ fontWeight: 600, fontSize: 13, color: '#374151', display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <Bell size={14} color={accent} /> Lägg till påminnelse för denna bokning
+                </span>
+              </label>
+              {addReminderChecked && (
+                <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  <div>
+                    <label style={{ fontSize: 12, fontWeight: 600, color: '#6b7280', display: 'block', marginBottom: 4 }}>Påminnelsetitel</label>
+                    <input value={reminderTitle} onChange={e => setReminderTitle(e.target.value)} placeholder="T.ex. Bekräfta leveranstid" style={{ width: '100%', border: '1px solid #e5e5e5', borderRadius: 8, padding: '7px 12px', fontSize: 13, outline: 'none', boxSizing: 'border-box' }} />
+                  </div>
+                  <div>
+                    <label style={{ fontSize: 12, fontWeight: 600, color: '#6b7280', display: 'block', marginBottom: 4 }}>Datum för påminnelse</label>
+                    <input type="date" value={reminderDate} onChange={e => setReminderDate(e.target.value)} style={{ width: '100%', border: '1px solid #e5e5e5', borderRadius: 8, padding: '7px 12px', fontSize: 13, outline: 'none', boxSizing: 'border-box' }} />
+                  </div>
+                </div>
+              )}
+            </div>
           </section>
 
           {/* Sektion G – Åtgärder */}

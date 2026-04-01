@@ -58,3 +58,33 @@ export interface InventoryItem {
 }
 
 export type Region = 'Alla' | 'Göteborg' | 'Skaraborg';
+
+export interface Reminder {
+  id: string;
+  title: string;
+  description?: string;
+  reminderDate: string;   // ISO date string YYYY-MM-DD
+  orderId?: string;
+  status: 'aktiv' | 'klar';
+  createdAt: string;
+}
+
+export interface StaffMember {
+  id: string;
+  name: string;
+  role?: string;
+  phone?: string;
+  email?: string;
+  notes?: string;
+  createdAt: string;
+}
+
+export interface StaffSchedule {
+  id: string;
+  staffId: string;
+  orderId?: string;
+  scheduleDate: string;
+  role?: string;
+  notes?: string;
+  createdAt: string;
+}
