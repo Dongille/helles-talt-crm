@@ -1,17 +1,19 @@
 import { useState } from 'react';
 import { useOrders } from '../hooks/useOrders';
 import { useReminders } from '../hooks/useReminders';
+import { useStaff } from '../hooks/useStaff';
 import { useAppContext } from '../context/AppContext';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, startOfWeek, endOfWeek, isSameMonth, isToday, isSameDay, parseISO, addMonths, subMonths } from 'date-fns';
 import { sv } from 'date-fns/locale';
 import { ChevronLeft, ChevronRight, Truck, Package, Star, FileText, Bell } from 'lucide-react';
-import type { Order } from '../types';
+import type { Order, StaffMember, StaffSchedule } from '../types';
 import { generateAndPrint } from '../components/PdfGenerator/generateHtml';
 import { resolveDisplayName } from '../utils/legacyProductMapping';
 
 export default function Calendar() {
   const { orders, isLoading, fetchError } = useOrders();
   const { reminders } = useReminders();
+  const { staff, schedules } = useStaff();
   const { region } = useAppContext();
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDay, setSelectedDay] = useState<Date | null>(null);
@@ -113,7 +115,7 @@ export default function Calendar() {
           <span>Kund återlämning</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded-full" style={{ background: '#9333ea' }} />
+          <div className="w-3 h-3 rounded-full" style={{ background: '#ef4444' }} />
           <span>Påminnelse</span>
         </div>
       </div>
@@ -185,7 +187,7 @@ export default function Calendar() {
                         </div>
                       ))}
                       {dayReminders.slice(0, 1).map(r => (
-                        <div key={r.id} className="text-[10px] rounded px-1 py-0.5 truncate flex items-center gap-1" style={{ background: '#f3e8ff', color: '#7e22ce' }}>
+                        <div key={r.id} className="text-[10px] rounded px-1 py-0.5 truncate flex items-center gap-1" style={{ background: '#fee2e2', color: '#dc2626' }}>
                           <Bell size={8} className="flex-shrink-0" />
                           {r.title}
                         </div>
@@ -223,7 +225,7 @@ export default function Calendar() {
                     <h4 className="text-xs font-semibold text-green-700 uppercase tracking-wider mb-2 flex items-center gap-1.5">
                       <Truck size={12} /> Leveranser
                     </h4>
-                    {selectedEvents.deliveries.map(o => <OrderCard key={o.id} order={o} />)}
+                    {selectedEvents.deliveries.map(o => <OrderCard key={o.id} order={o} daySchedules={schedules} staff={staff} />)}
                   </div>
                 )}
                 {selectedEvents.pickups.length > 0 && (
@@ -231,7 +233,7 @@ export default function Calendar() {
                     <h4 className="text-xs font-semibold text-orange-700 uppercase tracking-wider mb-2 flex items-center gap-1.5">
                       <Package size={12} /> Hämtningar
                     </h4>
-                    {selectedEvents.pickups.map(o => <OrderCard key={o.id} order={o} />)}
+                    {selectedEvents.pickups.map(o => <OrderCard key={o.id} order={o} daySchedules={schedules} staff={staff} />)}
                   </div>
                 )}
                 {selectedEvents.events.length > 0 && (
@@ -239,7 +241,7 @@ export default function Calendar() {
                     <h4 className="text-xs font-semibold text-blue-700 uppercase tracking-wider mb-2 flex items-center gap-1.5">
                       <Star size={12} /> Event
                     </h4>
-                    {selectedEvents.events.map(o => <OrderCard key={o.id} order={o} />)}
+                    {selectedEvents.events.map(o => <OrderCard key={o.id} order={o} daySchedules={schedules} staff={staff} />)}
                   </div>
                 )}
                 {selectedEvents.selfDeliveries.length > 0 && (
@@ -247,7 +249,7 @@ export default function Calendar() {
                     <h4 className="text-xs font-semibold uppercase tracking-wider mb-2 flex items-center gap-1.5" style={{ color: '#6b7280' }}>
                       <Truck size={12} /> Kund hämtning
                     </h4>
-                    {selectedEvents.selfDeliveries.map(o => <OrderCard key={o.id} order={o} />)}
+                    {selectedEvents.selfDeliveries.map(o => <OrderCard key={o.id} order={o} daySchedules={schedules} staff={staff} />)}
                   </div>
                 )}
                 {selectedEvents.selfReturns.length > 0 && (
@@ -255,21 +257,21 @@ export default function Calendar() {
                     <h4 className="text-xs font-semibold uppercase tracking-wider mb-2 flex items-center gap-1.5" style={{ color: '#6b7280' }}>
                       <Package size={12} /> Kund återlämning
                     </h4>
-                    {selectedEvents.selfReturns.map(o => <OrderCard key={o.id} order={o} />)}
+                    {selectedEvents.selfReturns.map(o => <OrderCard key={o.id} order={o} daySchedules={schedules} staff={staff} />)}
                   </div>
                 )}
                 {dayReminders.length > 0 && (
                   <div>
-                    <h4 className="text-xs font-semibold uppercase tracking-wider mb-2 flex items-center gap-1.5" style={{ color: '#7e22ce' }}>
+                    <h4 className="text-xs font-semibold uppercase tracking-wider mb-2 flex items-center gap-1.5" style={{ color: '#dc2626' }}>
                       <Bell size={12} /> Påminnelser
                     </h4>
                     {dayReminders.map(r => {
                       const linked = orders.find(o => o.id === r.orderId);
                       return (
-                        <div key={r.id} style={{ background: '#f3e8ff', borderRadius: 8, padding: '10px 12px', marginBottom: 6 }}>
-                          <p style={{ fontWeight: 600, fontSize: 13, color: '#6b21a8' }}>{r.title}</p>
-                          {r.description && <p style={{ fontSize: 12, color: '#7e22ce', marginTop: 2 }}>{r.description}</p>}
-                          {linked && <p style={{ fontSize: 11, color: '#9333ea', marginTop: 4 }}>🔗 {linked.firstName} {linked.lastName} – {linked.eventDate}</p>}
+                        <div key={r.id} style={{ background: '#fee2e2', borderRadius: 8, padding: '10px 12px', marginBottom: 6 }}>
+                          <p style={{ fontWeight: 600, fontSize: 13, color: '#991b1b' }}>{r.title}</p>
+                          {r.description && <p style={{ fontSize: 12, color: '#dc2626', marginTop: 2 }}>{r.description}</p>}
+                          {linked && <p style={{ fontSize: 11, color: '#b91c1c', marginTop: 4 }}>{linked.firstName} {linked.lastName} – {linked.eventDate}</p>}
                         </div>
                       );
                     })}
@@ -285,8 +287,9 @@ export default function Calendar() {
   );
 }
 
-function OrderCard({ order }: { order: Order }) {
+function OrderCard({ order, daySchedules = [], staff = [] }: { order: Order; daySchedules?: StaffSchedule[]; staff?: StaffMember[] }) {
   const [loading, setLoading] = useState(false);
+  const orderStaff = daySchedules.filter(s => s.orderId === order.id);
 
   const handlePdf = async () => {
     setLoading(true);
@@ -304,6 +307,18 @@ function OrderCard({ order }: { order: Order }) {
           <p className="font-semibold text-gray-800">{order.firstName} {order.lastName}</p>
           <p className="text-xs text-gray-500">{order.address}, {order.city}</p>
           <p className="text-xs text-gray-400 mt-1">{order.region} · {order.items.slice(0, 2).map(i => resolveDisplayName(i)).join(', ')}{order.items.length > 2 ? '...' : ''}</p>
+          {orderStaff.length > 0 && (
+            <div style={{ marginTop: 6, paddingTop: 6, borderTop: '1px solid #e5e7eb' }}>
+              {orderStaff.map(s => {
+                const member = staff.find(m => m.id === s.staffId);
+                return (
+                  <p key={s.id} style={{ fontSize: 11, color: '#374151' }}>
+                    {member?.name}{s.role ? ` (${s.role})` : ''} – {s.assignmentType === 'hämtning' ? 'Hämtning' : 'Leverans'}
+                  </p>
+                );
+              })}
+            </div>
+          )}
         </div>
         <button
           onClick={handlePdf}
