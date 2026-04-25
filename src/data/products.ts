@@ -73,7 +73,7 @@ export const PRODUCTS: ProductDefinition[] = [
 
   // Möbler – Dukar & Överdrag (Textiler) – fixed color variants, no dropdown
   { id: 'duk-engangs-180-vit', name: 'Engångsduk 180 cm – Vit', category: 'Möbler – Dukar & Överdrag', basePrice: 40, montagePrice: 10, hasMontage: true },
-  { id: 'duk-enkel-rond-vit', name: 'Enkelduk Ø156 cm – Vit', category: 'Möbler – Dukar & Överdrag', basePrice: 80, montagePrice: 10, hasMontage: true },
+  { id: 'duk-enkel-rond-vit', name: 'Engångsduk 180 cm – Svart', category: 'Möbler – Dukar & Överdrag', basePrice: 40, montagePrice: 10, hasMontage: true },
   { id: 'duk-180-lang-vit', name: 'Duk 180 cm – Vit', category: 'Möbler – Dukar & Överdrag', basePrice: 140, montagePrice: 10, hasMontage: true },
   { id: 'duk-rond-156-vit', name: 'Duk Ø156 cm – Vit', category: 'Möbler – Dukar & Överdrag', basePrice: 220, montagePrice: 10, hasMontage: true },
   { id: 'stolskjol-vit', name: 'Stolskjol – Vit', category: 'Möbler – Dukar & Överdrag', basePrice: 40, montagePrice: 5, hasMontage: true },
