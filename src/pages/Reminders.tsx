@@ -59,7 +59,7 @@ export default function Reminders() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="font-serif text-2xl font-bold" style={{ color: accent }}>Påminnelser</h2>
+          <h2 className="font-serif text-2xl font-bold" style={{ color: accent }}>Loggbok</h2>
           <p className="text-gray-500 text-sm mt-1">{active.length} aktiva</p>
         </div>
         <button

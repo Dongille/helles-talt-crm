@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useInventory } from '../hooks/useInventory';
 import { useOrders } from '../hooks/useOrders';
 import { useAppContext } from '../context/AppContext';
-import { useLogbook } from '../hooks/useLogbook';
 import { PRODUCTS, type ProductDefinition } from '../data/products';
 import { parseISO } from 'date-fns';
 import { resolveProductId } from '../utils/legacyProductMapping';
@@ -54,7 +53,6 @@ export default function Inventory() {
   const { inventory, updateInventoryItem } = useInventory();
   const { orders } = useOrders();
   const { region } = useAppContext();
-  const { addEntry } = useLogbook();
   const [activeTab, setActiveTab]     = useState<Tab>('Partytält');
   const [activeSubcat, setActiveSubcat] = useState<Record<string, string>>({
     Partytält:       'Semi tält',
@@ -125,27 +123,8 @@ export default function Inventory() {
   const handleUpdateInventory = (
     product: ProductDefinition,
     updates: { quantityGoteborg?: number; quantitySkaraborg?: number },
-    editRegion: 'Göteborg' | 'Skaraborg',
   ) => {
-    const { gbg, ska } = getQty(product.id);
-    const bookedGbg = getBooked(product.id, 'Göteborg');
-    const bookedSka = getBooked(product.id, 'Skaraborg');
-
-    const oldStock  = editRegion === 'Göteborg' ? gbg : ska;
-    const oldBooked = editRegion === 'Göteborg' ? bookedGbg : bookedSka;
-    const oldAvail  = oldStock - oldBooked;
-
-    const newStock  = editRegion === 'Göteborg' ? (updates.quantityGoteborg ?? gbg) : (updates.quantitySkaraborg ?? ska);
-    const newBooked = editRegion === 'Göteborg' ? bookedGbg : bookedSka;
-    const newAvail  = newStock - newBooked;
-
     updateInventoryItem(product.id, updates);
-
-    if (oldAvail > 0 && newAvail <= 0) {
-      addEntry({ productId: product.id, productName: product.name, category: product.category, region: editRegion, available: newAvail, type: 'shortage' });
-    } else if (oldAvail <= 0 && newAvail > 0) {
-      addEntry({ productId: product.id, productName: product.name, category: product.category, region: editRegion, available: newAvail, type: 'resolved' });
-    }
   };
 
   return (
@@ -276,7 +255,6 @@ export default function Inventory() {
                             handleUpdateInventory(
                               product,
                               rgn === 'Göteborg' ? { quantityGoteborg: val } : { quantitySkaraborg: val },
-                              rgn,
                             );
                           }}
                           style={{ width: 64, textAlign: 'center', border: '1px solid #e0e0e0', borderRadius: 6, padding: '4px 6px', fontSize: 13, outline: 'none' }}

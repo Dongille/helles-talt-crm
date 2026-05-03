@@ -7,7 +7,6 @@ import Requests  from './pages/Requests'
 import Orders    from './pages/Orders'
 import Calendar  from './pages/Calendar'
 import Inventory from './pages/Inventory'
-import Logbook   from './pages/Logbook'
 import Statistics from './pages/Statistics'
 import Archive   from './pages/Archive'
 import Invoicing from './pages/Invoicing'
@@ -55,11 +54,10 @@ function App() {
           <Route path="/bokningar"     element={<Orders />} />
           <Route path="/kalender"      element={<Calendar />} />
           <Route path="/inventering"   element={<Inventory />} />
-          <Route path="/loggbok"       element={<Logbook />} />
           <Route path="/statistik"     element={<Statistics />} />
           <Route path="/arkiv"         element={<Archive />} />
           <Route path="/fakturering"   element={<Invoicing />} />
-          <Route path="/påminnelser"   element={<Reminders />} />
+          <Route path="/loggbok"       element={<Reminders />} />
           <Route path="/personal"      element={<Staff />} />
         </Route>
       </Route>
