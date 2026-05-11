@@ -60,13 +60,13 @@ export const PRODUCTS: ProductDefinition[] = [
   { id: 'talt-pop-3x9', name: 'Pop-up tält 3x9 m', category: 'Partytält', subcategory: 'Pop-up tält', basePrice: 2400, montagePrice: 1200, hasMontage: true },
 
   // Möbler – Stolar & Bänkset (Sittplatser)
-  { id: 'stol-klapp-vit', name: 'Klappstol vit', category: 'Möbler – Stolar & Bänkset', basePrice: 18, montagePrice: 5, hasMontage: true },
-  { id: 'stol-klapp-svart', name: 'Klappstol svart', category: 'Möbler – Stolar & Bänkset', basePrice: 18, montagePrice: 5, hasMontage: true },
+  { id: 'stol-klapp-vit', name: 'Klappstol vit', category: 'Möbler – Stolar & Bänkset', basePrice: 20, montagePrice: 5, hasMontage: true },
+  { id: 'stol-klapp-svart', name: 'Klappstol svart', category: 'Möbler – Stolar & Bänkset', basePrice: 20, montagePrice: 5, hasMontage: true },
   { id: 'stol-brollop', name: 'Bröllopstol', category: 'Möbler – Stolar & Bänkset', basePrice: 55, montagePrice: 15, hasMontage: true },
   { id: 'bankset-vit', name: 'Bänkar vit', category: 'Möbler – Stolar & Bänkset', basePrice: 45, montagePrice: 5, hasMontage: true },
 
   // Möbler – Bord & Ståbord (Bord)
-  { id: 'bord-180', name: 'Bord 180x75 cm', category: 'Möbler – Bord & Ståbord', basePrice: 58, montagePrice: 10, hasMontage: true },
+  { id: 'bord-180', name: 'Bord 180x75 cm', category: 'Möbler – Bord & Ståbord', basePrice: 60, montagePrice: 10, hasMontage: true },
   { id: 'bord-150x180', name: 'Bord 150x180 cm', category: 'Möbler – Bord & Ståbord', basePrice: 120, montagePrice: 20, hasMontage: true },
   { id: 'bord-rond-156', name: 'Bord Ø156 cm', category: 'Möbler – Bord & Ståbord', basePrice: 210, montagePrice: 20, hasMontage: true },
   { id: 'stabord-80', name: 'Ståbord Ø80 cm', category: 'Möbler – Bord & Ståbord', basePrice: 110, montagePrice: 10, hasMontage: true },
@@ -87,7 +87,7 @@ export const PRODUCTS: ProductDefinition[] = [
   { id: 'porslin-skraddarsy', name: 'Skräddarsy porslinspaket', category: 'Porslin & Bestick', basePrice: 'offert', montagePrice: 0, hasMontage: false, isCustomPorslin: true },
 
   // Festutrustning & Övrigt
-  { id: 'golv-m2', name: 'Golv m²', category: 'Festutrustning & Övrigt', basePrice: 50, montagePrice: 15, hasMontage: true },
+  { id: 'golv-m2', name: 'Golv m²', category: 'Festutrustning & Övrigt', basePrice: 50, montagePrice: 30, hasMontage: true },
   { id: 'ljusslinga-10m', name: 'Ljusslingor 10m', category: 'Festutrustning & Övrigt', basePrice: 240, montagePrice: 80, hasMontage: true },
   { id: 'hogtalare', name: 'Högtalare', category: 'Festutrustning & Övrigt', basePrice: 800, montagePrice: 20, hasMontage: true },
   { id: 'infravarme', name: 'Infravärme 1,5 kW', category: 'Festutrustning & Övrigt', basePrice: 260, montagePrice: 40, hasMontage: true },
