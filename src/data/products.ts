@@ -87,7 +87,7 @@ export const PRODUCTS: ProductDefinition[] = [
   { id: 'porslin-skraddarsy', name: 'Skräddarsy porslinspaket', category: 'Porslin & Bestick', basePrice: 'offert', montagePrice: 0, hasMontage: false, isCustomPorslin: true },
 
   // Festutrustning & Övrigt
-  { id: 'golv-m2', name: 'Golv m²', category: 'Festutrustning & Övrigt', basePrice: 50, montagePrice: 30, hasMontage: true },
+  { id: 'golv-m2', name: 'Golv m²', category: 'Festutrustning & Övrigt', basePrice: 50, montagePrice: 25, hasMontage: true },
   { id: 'ljusslinga-10m', name: 'Ljusslingor 10m', category: 'Festutrustning & Övrigt', basePrice: 240, montagePrice: 80, hasMontage: true },
   { id: 'hogtalare', name: 'Högtalare', category: 'Festutrustning & Övrigt', basePrice: 800, montagePrice: 20, hasMontage: true },
   { id: 'infravarme', name: 'Infravärme 1,5 kW', category: 'Festutrustning & Övrigt', basePrice: 260, montagePrice: 40, hasMontage: true },
