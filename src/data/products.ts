@@ -55,9 +55,9 @@ export const PRODUCTS: ProductDefinition[] = [
   { id: 'talt-pag-5x15', name: 'Pagodatält 5x15 m', category: 'Partytält', subcategory: 'Pagodatält', basePrice: 5600, montagePrice: 4300, hasMontage: true },
 
   // Pop-up tält
-  { id: 'talt-pop-3x3', name: 'Pop-up tält 3x3 m', category: 'Partytält', subcategory: 'Pop-up tält', basePrice: 1200, montagePrice: 800, hasMontage: true },
-  { id: 'talt-pop-3x6', name: 'Pop-up tält 3x6 m', category: 'Partytält', subcategory: 'Pop-up tält', basePrice: 1800, montagePrice: 1000, hasMontage: true },
-  { id: 'talt-pop-3x9', name: 'Pop-up tält 3x9 m', category: 'Partytält', subcategory: 'Pop-up tält', basePrice: 2400, montagePrice: 1200, hasMontage: true },
+  { id: 'talt-pop-3x3', name: 'Pop-up tält 3x3 m', category: 'Partytält', subcategory: 'Pop-up tält', basePrice: 1100, montagePrice: 800, hasMontage: true },
+  { id: 'talt-pop-3x6', name: 'Pop-up tält 3x6 m', category: 'Partytält', subcategory: 'Pop-up tält', basePrice: 1700, montagePrice: 1000, hasMontage: true },
+  { id: 'talt-pop-3x9', name: 'Pop-up tält 3x9 m', category: 'Partytält', subcategory: 'Pop-up tält', basePrice: 2300, montagePrice: 1400, hasMontage: true },
 
   // Möbler – Stolar & Bänkset (Sittplatser)
   { id: 'stol-klapp-vit', name: 'Klappstol vit', category: 'Möbler – Stolar & Bänkset', basePrice: 20, montagePrice: 5, hasMontage: true },
