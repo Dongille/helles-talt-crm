@@ -40,7 +40,7 @@ export const PRODUCTS: ProductDefinition[] = [
   { id: 'talt-semi-4x10', name: 'Partytält semi 4x10 m', category: 'Partytält', subcategory: 'Partytält Semi', basePrice: 3200, montagePrice: 2200, hasMontage: true },
 
   // Partytält Pro
-  { id: 'talt-pro-4x8', name: 'Partytält Pro 5x10 m', category: 'Partytält', subcategory: 'Partytält Pro', basePrice: 4100, montagePrice: 3300, hasMontage: true },
+  { id: 'talt-pro-4x8', name: 'Partytält pro 5x10 m', category: 'Partytält', subcategory: 'Partytält Pro', basePrice: 4100, montagePrice: 3300, hasMontage: true },
   { id: 'talt-pro-6x12', name: 'Partytält pro 6x12 m', category: 'Partytält', subcategory: 'Partytält Pro', basePrice: 4800, montagePrice: 3900, hasMontage: true },
   { id: 'talt-pro-8x16', name: 'Partytält pro 8x16 m', category: 'Partytält', subcategory: 'Partytält Pro', basePrice: 'offert', montagePrice: 'offert', hasMontage: true },
 
