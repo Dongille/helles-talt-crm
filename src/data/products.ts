@@ -60,14 +60,14 @@ export const PRODUCTS: ProductDefinition[] = [
   { id: 'talt-pop-3x9', name: 'Pop-up tält 3x9 m', category: 'Partytält', subcategory: 'Pop-up tält', basePrice: 2300, montagePrice: 1400, hasMontage: true },
 
   // Möbler – Stolar & Bänkset (Sittplatser)
-  { id: 'stol-klapp-vit', name: 'Klappstol vit', category: 'Möbler – Stolar & Bänkset', basePrice: 20, montagePrice: 5, hasMontage: true },
-  { id: 'stol-klapp-svart', name: 'Klappstol svart', category: 'Möbler – Stolar & Bänkset', basePrice: 20, montagePrice: 5, hasMontage: true },
-  { id: 'stol-brollop', name: 'Bröllopstol', category: 'Möbler – Stolar & Bänkset', basePrice: 55, montagePrice: 15, hasMontage: true },
+  { id: 'stol-klapp-vit', name: 'Klappstol vit', category: 'Möbler – Stolar & Bänkset', basePrice: 17.5, montagePrice: 5, hasMontage: true },
+  { id: 'stol-klapp-svart', name: 'Klappstol svart', category: 'Möbler – Stolar & Bänkset', basePrice: 17.5, montagePrice: 5, hasMontage: true },
+  { id: 'stol-brollop', name: 'Bröllopstol', category: 'Möbler – Stolar & Bänkset', basePrice: 65, montagePrice: 15, hasMontage: true },
   { id: 'bankset-vit', name: 'Bänkar vit', category: 'Möbler – Stolar & Bänkset', basePrice: 45, montagePrice: 5, hasMontage: true },
 
   // Möbler – Bord & Ståbord (Bord)
-  { id: 'bord-180', name: 'Bord 180x75 cm', category: 'Möbler – Bord & Ståbord', basePrice: 60, montagePrice: 10, hasMontage: true },
-  { id: 'bord-150x180', name: 'Bord 150x180 cm', category: 'Möbler – Bord & Ståbord', basePrice: 120, montagePrice: 20, hasMontage: true },
+  { id: 'bord-180', name: 'Bord 180x75 cm', category: 'Möbler – Bord & Ståbord', basePrice: 65, montagePrice: 10, hasMontage: true },
+  { id: 'bord-150x180', name: 'Bord 150x180 cm', category: 'Möbler – Bord & Ståbord', basePrice: 130, montagePrice: 20, hasMontage: true },
   { id: 'bord-rond-156', name: 'Bord Ø156 cm', category: 'Möbler – Bord & Ståbord', basePrice: 210, montagePrice: 20, hasMontage: true },
   { id: 'stabord-80', name: 'Ståbord Ø80 cm', category: 'Möbler – Bord & Ståbord', basePrice: 110, montagePrice: 10, hasMontage: true },
 
