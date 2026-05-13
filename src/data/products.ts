@@ -40,8 +40,8 @@ export const PRODUCTS: ProductDefinition[] = [
   { id: 'talt-semi-4x10', name: 'Partytält semi 4x10 m', category: 'Partytält', subcategory: 'Partytält Semi', basePrice: 3200, montagePrice: 2200, hasMontage: true },
 
   // Partytält Pro
-  { id: 'talt-pro-4x8', name: 'Partytält pro 4x8 m', category: 'Partytält', subcategory: 'Partytält Pro', basePrice: 3200, montagePrice: 2200, hasMontage: true },
-  { id: 'talt-pro-6x12', name: 'Partytält pro 6x12 m', category: 'Partytält', subcategory: 'Partytält Pro', basePrice: 4600, montagePrice: 3400, hasMontage: true },
+  { id: 'talt-pro-4x8', name: 'Partytält Pro 5x10 m', category: 'Partytält', subcategory: 'Partytält Pro', basePrice: 4100, montagePrice: 3300, hasMontage: true },
+  { id: 'talt-pro-6x12', name: 'Partytält pro 6x12 m', category: 'Partytält', subcategory: 'Partytält Pro', basePrice: 4800, montagePrice: 3900, hasMontage: true },
   { id: 'talt-pro-8x16', name: 'Partytält pro 8x16 m', category: 'Partytält', subcategory: 'Partytält Pro', basePrice: 'offert', montagePrice: 'offert', hasMontage: true },
 
   // Sektionstält
@@ -50,9 +50,9 @@ export const PRODUCTS: ProductDefinition[] = [
   { id: 'talt-sek-15x30', name: 'Sektionstält 15x30 m', category: 'Partytält', subcategory: 'Sektionstält', basePrice: 'offert', montagePrice: 'offert', hasMontage: true },
 
   // Pagodatält
-  { id: 'talt-pag-5x5', name: 'Pagodatält 5x5 m', category: 'Partytält', subcategory: 'Pagodatält', basePrice: 2800, montagePrice: 2600, hasMontage: true },
-  { id: 'talt-pag-5x10', name: 'Pagodatält 5x10 m', category: 'Partytält', subcategory: 'Pagodatält', basePrice: 4200, montagePrice: 3200, hasMontage: true },
-  { id: 'talt-pag-5x15', name: 'Pagodatält 5x15 m', category: 'Partytält', subcategory: 'Pagodatält', basePrice: 5600, montagePrice: 3600, hasMontage: true },
+  { id: 'talt-pag-5x5', name: 'Pagodatält 5x5 m', category: 'Partytält', subcategory: 'Pagodatält', basePrice: 3200, montagePrice: 2600, hasMontage: true },
+  { id: 'talt-pag-5x10', name: 'Pagodatält 5x10 m', category: 'Partytält', subcategory: 'Pagodatält', basePrice: 4400, montagePrice: 3500, hasMontage: true },
+  { id: 'talt-pag-5x15', name: 'Pagodatält 5x15 m', category: 'Partytält', subcategory: 'Pagodatält', basePrice: 5600, montagePrice: 4300, hasMontage: true },
 
   // Pop-up tält
   { id: 'talt-pop-3x3', name: 'Pop-up tält 3x3 m', category: 'Partytält', subcategory: 'Pop-up tält', basePrice: 1200, montagePrice: 800, hasMontage: true },
