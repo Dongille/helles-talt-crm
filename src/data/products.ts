@@ -72,14 +72,14 @@ export const PRODUCTS: ProductDefinition[] = [
   { id: 'stabord-80', name: 'Ståbord Ø80 cm', category: 'Möbler – Bord & Ståbord', basePrice: 110, montagePrice: 10, hasMontage: true },
 
   // Möbler – Dukar & Överdrag (Textiler) – fixed color variants, no dropdown
-  { id: 'duk-engangs-180-vit', name: 'Engångsduk 180 cm – Vit', category: 'Möbler – Dukar & Överdrag', basePrice: 60, montagePrice: 10, hasMontage: true },
-  { id: 'duk-enkel-rond-vit', name: 'Engångsduk 180 cm – Svart', category: 'Möbler – Dukar & Överdrag', basePrice: 60, montagePrice: 10, hasMontage: true },
-  { id: 'duk-180-lang-vit', name: 'Duk 180 cm – Vit', category: 'Möbler – Dukar & Överdrag', basePrice: 140, montagePrice: 10, hasMontage: true },
-  { id: 'duk-rond-156-vit', name: 'Duk Ø156 cm – Vit', category: 'Möbler – Dukar & Överdrag', basePrice: 220, montagePrice: 10, hasMontage: true },
-  { id: 'stolskjol-vit', name: 'Stolskjol – Vit', category: 'Möbler – Dukar & Överdrag', basePrice: 40, montagePrice: 5, hasMontage: true },
-  { id: 'stolskjol-svart', name: 'Stolskjol – Svart', category: 'Möbler – Dukar & Överdrag', basePrice: 40, montagePrice: 5, hasMontage: true },
-  { id: 'overdrag-stabord-vit', name: 'Överdragsstrumpa ståbord – Vit', category: 'Möbler – Dukar & Överdrag', basePrice: 120, montagePrice: 10, hasMontage: true },
-  { id: 'overdrag-stabord-svart', name: 'Överdragsstrumpa ståbord – Svart', category: 'Möbler – Dukar & Överdrag', basePrice: 120, montagePrice: 10, hasMontage: true },
+  { id: 'duk-engangs-180-vit', name: 'Engångsduk 180 cm – Vit', category: 'Möbler – Dukar & Överdrag', basePrice: 45, montagePrice: 10, hasMontage: true },
+  { id: 'duk-enkel-rond-vit', name: 'Engångsduk 180 cm – Svart', category: 'Möbler – Dukar & Överdrag', basePrice: 45, montagePrice: 10, hasMontage: true },
+  { id: 'duk-180-lang-vit', name: 'Enkel tygduk', category: 'Möbler – Dukar & Överdrag', basePrice: 75, montagePrice: 10, hasMontage: true },
+  { id: 'duk-rond-156-vit', name: 'Enkel tygduk rund', category: 'Möbler – Dukar & Överdrag', basePrice: 190, montagePrice: 10, hasMontage: true },
+  { id: 'stolskjol-vit', name: 'Stolskjol – Vit', category: 'Möbler – Dukar & Överdrag', basePrice: 45, montagePrice: 5, hasMontage: true },
+  { id: 'stolskjol-svart', name: 'Stolskjol – Svart', category: 'Möbler – Dukar & Överdrag', basePrice: 25, montagePrice: 5, hasMontage: true },
+  { id: 'overdrag-stabord-vit', name: 'Överdragsstrumpa ståbord – Vit', category: 'Möbler – Dukar & Överdrag', basePrice: 115, montagePrice: 10, hasMontage: true },
+  { id: 'overdrag-stabord-svart', name: 'Överdragsstrumpa ståbord – Svart', category: 'Möbler – Dukar & Överdrag', basePrice: 115, montagePrice: 10, hasMontage: true },
 
   // Porslin & Bestick (visas under Festutrustning → Porslin)
   { id: 'porslin-8del', name: 'Porslinspaket 8-delar', category: 'Porslin & Bestick', basePrice: 40, montagePrice: 10, hasMontage: true, unit: 'person', hasDishwashing: true },
